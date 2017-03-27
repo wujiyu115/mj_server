@@ -6,7 +6,7 @@ local M = {}
 function M:start(conf)
     self.gate = skynet.newservice("gate")
 
-    skynet.call(gate, "lua", "open", conf)
+    skynet.call(self.gate, "lua", "open", conf)
 
     skynet.error("login service listen on port "..conf.port)
 end

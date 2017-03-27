@@ -1,4 +1,5 @@
 local skynet = require "skynet"
+require "skynet.manager"
 local sock_mgr = require "sock_mgr"
 
 local CMD = {}
@@ -8,7 +9,7 @@ function CMD.start(conf)
 end
 
 skynet.start(function()
-    skynet.dispatch("lua", function(_, session, cmd, ...)
+    skynet.dispatch("lua", function(_, session, cmd, subcmd, ...)
         if cmd == "socket" then
             local f = sock_mgr[subcmd]
             f(sock_mgr, ...)
@@ -19,7 +20,7 @@ skynet.start(function()
                 return
             end
 
-            skynet.ret(skynet.pack(f(...)))
+            skynet.ret(skynet.pack(f(subcmd, ...)))
         end
     end)
 

@@ -1,7 +1,7 @@
 local skynet = require "skynet"
 require "skynet.manager"
 local base_app_mgr = require "base_app_mgr"
-local account_mgr = require "account_mgr"
+local player_mgr = require "player_mgr"
 
 local CMD = {}
 
