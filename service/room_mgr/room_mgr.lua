@@ -4,8 +4,7 @@ function M.get_room()
 
 end
 
-function M.create_room()
-
+function M.add_room(room)
 end
 
 function M.delete_room()
