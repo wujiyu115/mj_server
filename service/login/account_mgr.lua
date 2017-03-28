@@ -1,23 +1,39 @@
 local MongoLib = require "mongolib"
+local utils = require "utils"
 
 local mongo_host = "127.0.0.1"
 local mongo_db = "mj_server"
+
+local dbconf = {
+    host="127.0.0.1",
+    port=27017,
+    db="game",
+    username="yun",
+    password="yun",
+    authmod="mongodb_cr"
+}
 
 local M = {}
 
 function M:init()
     self.mongo = MongoLib.new()
-    self.mongo:connect(mongo_host)
+    self.mongo:connect(dbconf)
     self.mongo:use(mongo_db)
     self.account_tbl = {}
     self:load_all()
 end
 
 function M:load_all()
-    local record_list = mongo:find_all("account")
+    local it = self.mongo:find("account",{},{_id = false})
 
-    for _,v in pairs(record_list) do
-        self.account_tbl[v.account] = v
+    if not it then
+        return
+    end
+
+    while it:hasNext() do
+        local obj = it:next()
+        self.account_tbl[obj.account] = obj
+        print(utils.table_2_str(obj))
     end
 end
 
@@ -40,16 +56,16 @@ function M:verify(account, passwd)
 end
 
 -- 注册账号
-function M.register(info)
-    if self.account_tbl[info.account] then
+function M:register(account, passwd)
+    if self.account_tbl[account] then
         return false, "account exists"
     end
 
-    local info = {account = info.account, passwd = info.passwd}
+    local info = {account = account, passwd = passwd}
     self.account_tbl[account] = info
-    mongo:insert("account", info)
+    self.mongo:insert("account", info)
 
-    return true, info
+    return true
 end
 
 return M

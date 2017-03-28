@@ -1,5 +1,8 @@
 local skynet = require "skynet"
+local socket = require "socket"
 local utils = require "utils"
+local packer = require "packer"
+local account_mgr = require "account_mgr"
 
 local M = {}
 
@@ -9,11 +12,14 @@ function M:start(conf)
     skynet.call(self.gate, "lua", "open", conf)
 
     skynet.error("login service listen on port "..conf.port)
+
+    self:register_callback()
 end
 
 -------------------处理socket消息开始--------------------
 function M:open(fd, addr)
     skynet.error("New client from : " .. addr)
+    skynet.call(self.gate, "lua", "accept", fd)
 end
 
 function M:close(fd)
@@ -30,9 +36,10 @@ function M:warning(fd, size)
 end
 
 function M:data(fd, msg)
-    skynet.error("socket data fd "..fd)
+    skynet.error(string.format("socket data fd = %d, len = %d ", fd, #msg))
     local proto_id, params = string.unpack(">Hs2", msg)
 
+    skynet.error(string.format("msg id:%d content:%s", proto_id, params))
     params = utils.str_2_table(params)
 
     self:dispatch(fd, proto_id, params)
@@ -50,16 +57,19 @@ end
 function M:dispatch(fd, proto_id, params)
     local f = self.dispatch_tbl[proto_id]
     if not f then
+        skynet.error("can't find socket callback "..proto_id)
         return
     end
 
     local ret_msg = f(self, fd, params)
     if ret_msg then
-        socket.send(fd, packer.pack(proto_id, ret_msg))
+        skynet.error("ret msg:"..utils.table_2_str(ret_msg))
+        socket.write(fd, packer.pack(proto_id, ret_msg))
     end
 end
 
 function M:login(fd, msg)
+    skynet.error(string.format("verfy account:%s passwd:%s ", msg.account, msg.passwd))
     local success, errmsg = account_mgr:verify(msg.account, msg.passwd)
     if not success then
         return {errmsg = errmsg}
@@ -73,9 +83,9 @@ function M:register(fd, msg)
         return {errmsg = "account exist"}
     end
 
-    local success, info = account_mgr:register(msg.account, msg.passwd)
+    local success = account_mgr:register(msg.account, msg.passwd)
 
-    return info
+    return {token = "token"}
 end
 -------------------网络消息回调函数结束------------------
 

@@ -1,6 +1,10 @@
 local skynet = require "skynet"
 local player_mgr = require "player_mgr"
 local table_mgr = require "table_mgr"
+local mjlib = require "mjlib"
+
+local room_id = ...
+room_id = tonumber(room_id)
 
 local CMD = {}
 
@@ -25,4 +29,8 @@ skynet.start(function ()
             skynet.ret(skynet.pack(f(...)))
         end
     end)
+
+    if room_id == 1 then
+        mjlib.test()
+    end
 end)

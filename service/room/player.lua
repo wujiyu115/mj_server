@@ -15,6 +15,11 @@ function M:init(id, name)
     self.name = name
 end
 
+function M:start_game(cards)
+    self:stand_card = {}
+    self:wave_list = {}
+end
+
 return M
 
 

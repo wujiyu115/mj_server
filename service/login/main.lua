@@ -1,10 +1,12 @@
 local skynet = require "skynet"
 require "skynet.manager"
 local sock_mgr = require "sock_mgr"
+local account_mgr = require "account_mgr"
 
 local CMD = {}
 
 function CMD.start(conf)
+    account_mgr:init()
     sock_mgr:start(conf)
 end
 
