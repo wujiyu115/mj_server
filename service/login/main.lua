@@ -16,13 +16,17 @@ skynet.start(function()
             -- socket api don't need return
         else
             local f = CMD[cmd]
-            if not f then
-                return
+            assert(f, cmd)
+            if session == 0 then
+                f(subcmd, ...)
+            else
+                skynet.ret(skynet.pack(f(subcmd, ...)))
             end
 
-            skynet.ret(skynet.pack(f(subcmd, ...)))
         end
     end)
 
     skynet.register("login")
+
+    skynet.error("login booted...")
 end)

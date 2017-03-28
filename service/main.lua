@@ -1,6 +1,6 @@
 local skynet = require "skynet"
 
-function main()
+local function main()
     skynet.newservice("debug_console", 8000)
 
     -- 登陆服务
@@ -15,7 +15,8 @@ function main()
     skynet.uniqueservice("base_app_mgr")
 
     -- room_mgr
-    skynet.uniqueservice("room_mgr")
+    local room_mgr_service = skynet.uniqueservice("room_mgr")
+    skynet.call(room_mgr_service, "lua", "start")
 
     skynet.exit()
 end

@@ -9,6 +9,8 @@ function CMD.start()
     -- 初始化base_app_mgr
     base_app_mgr:init()
     base_app_mgr:create_base_apps()
+
+    player_mgr:init()
 end
 
 -- 玩家登陆成功
@@ -16,7 +18,7 @@ function CMD.on_login_success()
 
 end
 
-local function lua_dispatch(src, session, cmd, ...)
+local function lua_dispatch(_, session, cmd, ...)
     local f = CMD[cmd]
     assert(f, "base_app_mgr can't dispatch cmd ".. (cmd or nil))
 
@@ -31,6 +33,8 @@ local function init()
     skynet.register("base_app_mgr")
 
     skynet.dispatch("lua", lua_dispatch)
+
+    skynet.error("base_app_mgr booted...")
 end
 
 skynet.start(init)
