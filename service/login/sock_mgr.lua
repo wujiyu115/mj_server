@@ -35,7 +35,7 @@ function M:data(fd, msg)
 
     params = utils.str_2_table(params)
 
-    self:dispatch(proto_id, params)
+    self:dispatch(fd, proto_id, params)
 end
 -------------------处理socket消息结束--------------------
 
@@ -43,27 +43,40 @@ end
 function M:register_callback()
     self.dispatch_tbl = {
         [1] = self.login,
-        [2] = self.register
+        [3] = self.register
     }
 end
 
-function M:dispatch(proto_id, params)
+function M:dispatch(fd, proto_id, params)
     local f = self.dispatch_tbl[proto_id]
     if not f then
         return
     end
 
-    f(self, skynet.unpack(params))
+    local ret_msg = f(self, fd, params)
+    if ret_msg then
+        socket.send(fd, packer.pack(proto_id, ret_msg))
+    end
 end
 
-function M:login(account, passwd)
+function M:login(fd, msg)
+    local success, errmsg = account_mgr:verify(msg.account, msg.passwd)
+    if not success then
+        return {errmsg = errmsg}
+    end
 
+    return {token = "token"}
 end
 
-function M:register(account, passwd)
+function M:register(fd, msg)
+    if account_mgr:get_by_account(msg.account) then
+        return {errmsg = "account exist"}
+    end
 
+    local success, info = account_mgr:register(msg.account, msg.passwd)
+
+    return info
 end
 -------------------网络消息回调函数结束------------------
 
 return M
-
