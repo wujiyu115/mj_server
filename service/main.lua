@@ -13,10 +13,11 @@ local function main()
 
     -- base_app_mgr
     skynet.uniqueservice("base_app_mgr")
+    skynet.call("base_app_mgr", "lua", "start")
 
     -- room_mgr
-    local room_mgr_service = skynet.uniqueservice("room_mgr")
-    skynet.call(room_mgr_service, "lua", "start")
+    skynet.uniqueservice("room_mgr")
+    skynet.call("room_mgr", "lua", "start")
 
     skynet.exit()
 end
