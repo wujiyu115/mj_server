@@ -11,10 +11,21 @@ function M:create_base_apps()
     for i=1,20 do
         local addr = skynet.newservice("base_app", i)
         local info = {
-            addr = addr
+            addr = addr,
+            port = 9000 + i
         }
 
         self.base_app_tbl[addr] = info
+    end
+end
+
+function M:start_base_apps()
+    for _,v in pairs(self.base_app_tbl) do
+        skynet.call(v.addr, "lua", "start", {
+            port = v.port,
+            maxclient = 1000,
+            nodelay = true,
+        })
     end
 end
 

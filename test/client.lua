@@ -52,6 +52,13 @@ end
 function deal_package(data)
     local id, msg_str = string.unpack(">Hs2", data)
     print("recv package:", id, msg_str)
+
+    local msg = utils.str_2_table(msg_str)
+    if id == 1 then
+        socket.close(fd)
+
+        fd = assert(socket.connect(msg.ip, tonumber(msg.port)))
+    end
 end
 
 function dispatch_package()
@@ -66,8 +73,13 @@ function dispatch_package()
 end
 
 function main()
-    --send_request(1, {account="a", passwd="b"})
-    send_request(3, {account="c", passwd="b"})
+    send_request(1, {account="a", passwd="a"})
+    --send_request(3, {account="c", passwd="b"})
+    socket.usleep(100000)
+    dispatch_package()
+
+    -- 发送登陆baseapp协议
+    send_request(1, {token="token"})
     socket.usleep(100000)
     dispatch_package()
 end
