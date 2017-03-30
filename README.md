@@ -6,20 +6,20 @@ https://github.com/yuanfengyun/mj_client
 
 1、下载源码
 
-git clone https://github.com/yuanfengyun/mj_server.git
+  git clone https://github.com/yuanfengyun/mj_server.git
 
 2、初始化submodule
 
-cd mj_server
+  cd mj_server
 
-git submodule update --init --recursive
+  git submodule update --init --recursive
 
 3、编译skynet
 
-cd skynet
+  cd skynet
 
-make linux
+  make linux
 
 4、运行
 
-    回到根目录：. run.sh
+  回到根目录：. run.sh
