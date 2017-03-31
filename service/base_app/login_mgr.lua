@@ -6,14 +6,10 @@ local M = {}
 
 function M:init()
     self.new_conn_tbl = {}
-    sock_mgr:register_callback(1, self.auth, self)
+    sock_mgr:register_callback("login.login_baseapp", self.auth, self)
 end
 
-function M:auth(fd, proto_id, msg)
-    if proto_id ~= 1 then
-        return {errmsg = "invalid status"}
-    end
-
+function M:auth(fd, msg)
     if msg.token ~= "token" then
         return {errmsg = "wrong token"}
     end
@@ -24,6 +20,7 @@ function M:auth(fd, proto_id, msg)
     obj:load_from_db()
 
     player_mgr:add(obj)
+    return {info = obj:pack()}
 end
 
 return M

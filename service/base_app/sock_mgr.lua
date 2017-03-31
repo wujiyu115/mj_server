@@ -2,6 +2,7 @@ local skynet = require "skynet"
 local socket = require "socket"
 local utils = require "utils"
 local packer = require "packer"
+local msg_define = require "msg_define"
 
 local M = {
     dispatch_tbl = {},
@@ -38,19 +39,15 @@ function M:warning(fd, size)
 end
 
 function M:data(fd, msg)
-    skynet.error(string.format("socket data fd = %d, len = %d ", fd, #msg))
+    skynet.error(string.format("recv socket data fd = %d, len = %d ", fd, #msg))
     local proto_id, params = string.unpack(">Hs2", msg)
 
-    skynet.error(string.format("msg id:%d content:%s", proto_id, params))
+    local proto_name = msg_define.id_2_name(proto_id)
+
+    skynet.error(string.format("socket msg id:%d name:%s %s", proto_id, proto_name, params))
     params = utils.str_2_table(params)
 
-    -- 没通过验证发送非验证消息
-    if not self.authed_fd[fd] and proto_id ~= 1 then
-        skynet.call(self.gate, "lua", "kick", fd)
-        return
-    end
-
-    self:dispatch(fd, proto_id, params)
+    self:dispatch(fd, proto_id, proto_name, params)
 end
 
 function M:close_conn(fd)
@@ -60,22 +57,22 @@ end
 -------------------处理socket消息结束--------------------
 
 -------------------网络消息回调函数开始------------------
-function M:register_callback(id, func, obj)
-    self.dispatch_tbl[id] = {func = func, obj = obj}
+function M:register_callback(name, func, obj)
+    self.dispatch_tbl[name] = {func = func, obj = obj}
 end
 
-function M:dispatch(fd, proto_id, params)
-    local t = self.dispatch_tbl[proto_id]
+function M:dispatch(fd, proto_id, proto_name, params)
+    local t = self.dispatch_tbl[proto_name]
     if not t then
-        skynet.error("can't find socket callback "..proto_id)
+        skynet.error("can't find socket callback "..proto_name)
         return
     end
 
     local ret
     if t.obj then
-        ret = t.func(t.obj, fd, proto_id, params)
+        ret = t.func(t.obj, fd, params)
     else
-        ret = t.func(fd, proto_id, params)
+        ret = t.func(fd, params)
     end
 
     if ret then

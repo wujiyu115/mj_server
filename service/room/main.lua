@@ -18,6 +18,12 @@ function CMD.leave()
 
 end
 
+function CMD.test()
+    if room_id == 1 then
+        mjlib.test()
+    end
+end
+
 skynet.start(function ()
     skynet.dispatch("lua", function (_, session, cmd, ...)
         local f = CMD[cmd]
@@ -29,8 +35,4 @@ skynet.start(function ()
             skynet.ret(skynet.pack(f(...)))
         end
     end)
-
-    if room_id == 1 then
-        mjlib.test()
-    end
 end)

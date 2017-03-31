@@ -9,7 +9,6 @@ function M:get_by_account(account)
 end
 
 function M:add(obj)
-    print(obj.account)
     self.player_tbl[obj.account] = obj
 end
 

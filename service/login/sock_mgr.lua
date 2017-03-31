@@ -3,6 +3,7 @@ local socket = require "socket"
 local utils = require "utils"
 local packer = require "packer"
 local account_mgr = require "account_mgr"
+local msg_define = require "msg_define"
 
 local M = {}
 
@@ -42,20 +43,22 @@ function M:data(fd, msg)
     skynet.error(string.format("msg id:%d content:%s", proto_id, params))
     params = utils.str_2_table(params)
 
-    self:dispatch(fd, proto_id, params)
+    local proto_name = msg_define.id_2_name(proto_id)
+
+    self:dispatch(fd, proto_id, proto_name, params)
 end
 -------------------处理socket消息结束--------------------
 
 -------------------网络消息回调函数开始------------------
 function M:register_callback()
     self.dispatch_tbl = {
-        [1] = self.login,
-        [3] = self.register
+        ["login.login"] = self.login,
+        ["login.register"] = self.register
     }
 end
 
-function M:dispatch(fd, proto_id, params)
-    local f = self.dispatch_tbl[proto_id]
+function M:dispatch(fd, proto_id, proto_name, params)
+    local f = self.dispatch_tbl[proto_name]
     if not f then
         skynet.error("can't find socket callback "..proto_id)
         return

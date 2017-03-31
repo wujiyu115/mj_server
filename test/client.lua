@@ -3,17 +3,20 @@ package.path = "skynet/lualib/?.lua;lualib/?.lua"
 
 local socket = require "clientsocket"
 local utils = require "utils"
+local msg_define = require "msg_define"
 
 local fd = assert(socket.connect("127.0.0.1", 8888))
 
 -- 发送消息至服务器
-function send_request(id, msg)
+function send_request(name, msg)
+    print(name)
+    local id = msg_define.name_2_id(name)
     local msg_str = utils.table_2_str(msg)
     local len = 2 + 2 + #msg_str
     local data = string.pack(">HHs2", len, id, msg_str)
     socket.send(fd, data)
 
-    print("REQUEST", id)
+    print("send msg", name)
     for k,v in pairs(msg) do
         print(k,v)
     end
@@ -73,13 +76,17 @@ function dispatch_package()
 end
 
 function main()
-    send_request(1, {account="a", passwd="a"})
-    --send_request(3, {account="c", passwd="b"})
+    send_request("login.login", {account="a", passwd="a"})
+    --send_request("login.regiser", {account="c", passwd="b"})
     socket.usleep(100000)
     dispatch_package()
 
     -- 发送登陆baseapp协议
-    send_request(1, {account = "a", token="token"})
+    send_request("login.login_baseapp", {account = "a", token="token"})
+    socket.usleep(100000)
+    dispatch_package()
+
+    send_request("room.create_table", {})
     socket.usleep(100000)
     dispatch_package()
 end

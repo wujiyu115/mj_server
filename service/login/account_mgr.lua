@@ -33,7 +33,6 @@ function M:load_all()
     while it:hasNext() do
         local obj = it:next()
         self.account_tbl[obj.account] = obj
-        print(utils.table_2_str(obj))
     end
 end
 

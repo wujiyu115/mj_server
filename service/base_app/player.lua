@@ -16,13 +16,19 @@ function M:init(fd, account)
     self.fd = fd
     self.account = account
     self.status = "load from db"
-
-    print(self.fd, self.account, self.status)
 end
 
 function M:load_from_db()
     local obj = db:load_player(self.account)
     self._db = obj
+end
+
+function M:pack()
+    return {
+        account = self.account,
+        nick_name = self._db.nick_name,
+        socre = self._db.score
+    }
 end
 
 return M
