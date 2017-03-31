@@ -1,4 +1,5 @@
 local skynet = require "skynet"
+local db = require "db"
 local sock_mgr = require "sock_mgr"
 local player_mgr  = require "player_mgr"
 local login_mgr = require "login_mgr"
@@ -6,6 +7,7 @@ local login_mgr = require "login_mgr"
 local CMD = {}
 
 function CMD.start(conf)
+    db:init()
     sock_mgr:start(conf)
     player_mgr:init()
     login_mgr:init()

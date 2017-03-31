@@ -4,16 +4,17 @@ function M:init()
     self.player_tbl = {}
 end
 
-function M:get_by_id(id)
-    return self.player_tbl[id]
+function M:get_by_account(account)
+    return self.player_tbl[account]
 end
 
 function M:add(obj)
-    self.player_tbl[obj.id] = obj
+    print(obj.account)
+    self.player_tbl[obj.account] = obj
 end
 
 function M:remove(obj)
-    self.player_tbl[obj.id] = nil
+    self.player_tbl[obj.account] = nil
 end
 
 return M

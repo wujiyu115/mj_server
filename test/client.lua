@@ -79,7 +79,7 @@ function main()
     dispatch_package()
 
     -- 发送登陆baseapp协议
-    send_request(1, {token="token"})
+    send_request(1, {account = "a", token="token"})
     socket.usleep(100000)
     dispatch_package()
 end
