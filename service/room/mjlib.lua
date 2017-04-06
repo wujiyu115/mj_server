@@ -1,11 +1,10 @@
 local utils = require "utils"
 
 local CardType = {
-    [0x10] = {min = 0x11, max = 0x19, chi = true},
-    [0x20] = {min = 0x21, max = 0x29, chi = true},
-    [0x30] = {min = 0x31, max = 0x39, chi = true},
-    [0x40] = {min = 0x41, max = 0x47, chi = false},
-    [0x50] = {min = 0x51, max = 0x58, chi = false},
+    [0x10] = {min = 1, max = 9, chi = true},
+    [0x20] = {min = 10, max = 18, chi = true},
+    [0x30] = {min = 19, max = 27, chi = true},
+    [0x40] = {min = 28, max = 34, chi = false},
 }
 
 local CardDefine = {
@@ -13,7 +12,6 @@ local CardDefine = {
     0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, -- 筒
     0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, -- 条
     0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, -- 东、南、西、北、中、发、白
-    0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, -- 春夏秋冬梅兰竹菊
 }
 
 local M = {}
@@ -25,17 +23,13 @@ M.COLOR_ZI = 0x40
 M.COLOR_HUA = 0x50
 
 -- 创建一幅牌,牌里存的不是牌本身，而是牌的序号
-function M.create(zi, hua)
+function M.create(zi)
     local t = {}
 
     local num = 3*9
 
     if zi then
         num = num + 7
-    end
-
-    if hua then
-        num = num + 8
     end
 
     for i=1,num do
@@ -103,6 +97,99 @@ end
 
 function M.can_right_chi(hand_cards, card)
     return M.can_chi(hand_cards, card - 2, card - 1)
+end
+
+function M.get_hu_info(hand_cards, waves, self_card, other_card)
+    local hand_cards_tmp = {}
+    for i,v in ipairs(hand_cards) do
+        hand_cards_tmp[i] = v
+    end
+
+    if other_card then
+        hand_cards_tmp[other_card] = hand_cards_tmp[other_card] + 1
+    end
+
+    local first_info = {
+        eye_count = 0       -- 能做成将的有几对
+        dui_count = 0,      -- 对子数量
+        dui_array = {},
+        peng_count = 0,     -- 刻子数量
+        normal_cards = {}   -- 普通牌
+        zi_cards = {}       -- 字牌
+    }
+
+    for color, cfg in pairs(CardType) do
+        if cfg.chi then
+            M.check_hu_chi(hand_cards_tmp, cfg, first_info)
+        else
+            M.check_hu(hand_cards_tmp, cfg, first_info)
+        end
+    end
+end
+
+function M.check_hu(cards, cfg, first_info)
+    for i = cfg.min, cfg.max do
+        local count = cards[i]
+
+        if count == 1 or count == 4 then
+            return false
+        end
+
+        if count == 2 then
+            if first_info.eye_count > 0 then
+                return false
+            end
+
+            first_info.eye_count == 0
+        elseif count == 3 then
+            first_info.peng_count = first_info.peng_count + 1
+        end
+    end
+end
+
+function M.check_hu_chi(info)
+    local tbl = {}
+    local eye_tbl = {}
+    for i = cfg.min, cfg.max do
+        repeat
+            local count = cards[i]
+            if count > 0 then
+                table.insert(tbl, count)
+                if count >= 2 then
+                    eye_tbl[i] = true
+                end
+            else
+                if #tbl == 0 then
+                    break
+                end
+
+                if not M.check_sub(tbl, info) then
+                    return false
+                end
+                tbl = {}
+                eye_tbl = {}
+            end
+        until(true)
+    end
+
+    return true
+end
+
+function M.check_sub(tbl, info)
+    local count = #tbl
+    local yu = (count % 3)
+
+    if yu == 1 then
+        return false
+    elseif yu == 2 then
+        if info.eye_count > 0 then
+            return false
+        end
+    end
+
+    if has_eye and info.eye_count > 0 then
+        return false
+    end
 end
 
 function M.test()
