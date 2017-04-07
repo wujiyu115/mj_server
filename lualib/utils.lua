@@ -47,4 +47,13 @@ function M.print(o)
     print(serialize(o))
 end
 
+function M.print_array(o)
+    local str = "{"
+    for k,v in ipairs(o) do
+        str = str .. serialize(v) .. ","
+    end
+    str = str .. "}"
+    print(str)
+end
+
 return M

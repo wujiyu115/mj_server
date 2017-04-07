@@ -1,3 +1,6 @@
+package.path = "../../lualib/?.lua;"..package.path
+
+local utils = require "utils"
 local hu_table = require "hu_table"
 
 local CardType = {
@@ -21,6 +24,41 @@ M.COLOR_TONG = 0x20
 M.COLOR_TIAO = 0x30
 M.COLOR_ZI = 0x40
 M.COLOR_HUA = 0x50
+
+function M.get_card_str(index)
+    if index >= 1 and index <= 9 then
+        return index .. "万"
+    elseif index >= 10 and index <= 18 then
+        return (index - 9) .. "筒"
+    elseif index >= 19 and index <= 27 then
+        return (index - 18) .. "条"
+    end
+
+    local t = {"东","西","南","北","中","发","白"}
+    return t[index - 27]
+end
+
+function M.print(tbl)
+    local str = ""
+    local card_str
+    for i=1,34 do
+        if tbl[i] > 0 then
+            card_str = M.get_card_str(i)
+        end
+
+        if tbl[i] == 1 then
+            str = str .. card_str
+        elseif tbl[i] == 2 then
+            str = str .. card_str .. card_str
+        elseif tbl[i] == 3 then
+            str = str .. card_str .. card_str .. card_str
+        elseif tbl[i] == 4 then
+            str = str .. card_str .. card_str .. card_str .. card_str
+        end
+    end
+
+    print(str)
+end
 
 -- 创建一幅牌,牌里存的不是牌本身，而是牌的序号
 function M.create(zi)
@@ -119,12 +157,15 @@ function M.get_hu_info(hand_cards, waves, self_card, other_card)
     }
 
     for color, cfg in pairs(CardType) do
-        if cfg.chi then
-            M.check_hu_chi(hand_cards_tmp, cfg, first_info)
-        else
-            M.check_hu(hand_cards_tmp, cfg, first_info)
+        if cfg.chi and not M.check_hu_chi(hand_cards_tmp, cfg, first_info) then
+            utils.print(cfg)
+            return false
+        elseif not cfg.chi and not M.check_hu(hand_cards_tmp, cfg, first_info) then
+            return false
         end
     end
+
+    return true
 end
 
 function M.check_hu(cards, cfg, first_info)
@@ -145,19 +186,17 @@ function M.check_hu(cards, cfg, first_info)
             first_info.peng_count = first_info.peng_count + 1
         end
     end
+
+    return true
 end
 
-function M.check_hu_chi(info)
+function M.check_hu_chi(cards, cfg, info)
     local tbl = {}
-    local eye_tbl = {}
     for i = cfg.min, cfg.max do
         repeat
             local count = cards[i]
             if count > 0 then
                 table.insert(tbl, count)
-                if count >= 2 then
-                    eye_tbl[i] = true
-                end
             else
                 if #tbl == 0 then
                     break
@@ -167,7 +206,6 @@ function M.check_hu_chi(info)
                     return false
                 end
                 tbl = {}
-                eye_tbl = {}
             end
         until(true)
     end
@@ -176,7 +214,10 @@ function M.check_hu_chi(info)
 end
 
 function M.check_sub(tbl, info)
-    local count = #tbl
+    local count = 0
+    for _,v in ipairs(tbl) do
+        count = count + v
+    end
     local yu = (count % 3)
 
     if yu == 1 then
@@ -185,81 +226,17 @@ function M.check_sub(tbl, info)
         if info.eye_count > 0 then
             return false
         end
+
+        info.eye_count = 1
+
+        return M.check_wave_and_eye(tbl)
     end
 
-    if has_eye and info.eye_count > 0 then
-        return false
-    end
-end
-
-local wave_tbl = {
-    [3] = 3, [4] = 3,
-
-    [31] = 30, [32] = 30, [33] = 33, [34] =  33, 
-
-    [44] = 33,
-
-    [111] = 111, [112] = 111, [113] = 111, [114] = 114,
-    [122] = 111, [123] = 111, [124] = 111,
-    [133] = 111, [134] = 111,
-    [141] = 141, [142] = 141, [143] = 141, [144] = 144,
-
-    [222] = 222, [223] = 222, [224] = 222,
-    [233] = 222, [234] = 222,
-    [244] = 222,
-
-    [311] = 300, [312] = 300, [313] = 300, [314] = 300,
-    [322] = 300, [323] = 300, [324] = 300,
-    [331] = 330, [332] = 330, [333] = 333, [334] = 333,
-    [341] = 330, [342] = 330, [343] = 330, [344] = 333,
-
-    [411] = 411, [412] = 411, [413] = 411, [414] = 414,
-    [422] = 411, [423] = 411, [424] = 411,
-    [433] = 411, [434] = 411,
-    [441] = 441, [442] = 441, [443] = 441, [444] = 444,
-}
-
--- 检查是否匹配
-function M.check_wave_old(tbl)
-    repeat
-       local num = tbl[1]
-        if tbl[2] then
-            num = num*10 + tbl[2]
-            if tbl[3] then
-                num = num*10 + tbl[3]
-            end
-        end
-
-        local sub_value = wave_tbl[num]
-        if not sub_value then
-            return false
-        end
-
-        --print(sub_value)
-        if sub_value > 99 then
-            tbl[1] = tbl[1] - math.floor(sub_value/100)
-            tbl[2] = tbl[2] - math.floor(sub_value/10)%10
-            tbl[3] = tbl[3] - (sub_value%10)
-        elseif sub_value > 9 then
-            tbl[1] = tbl[1] - math.floor(sub_value/10)%10
-            tbl[2] = tbl[2] - (sub_value%10)
-        else
-            tbl[1] = tbl[1] - sub_value
-        end
-
-        while(tbl[1] == 0) do
-            table.remove(tbl, 1)
-        end
-
-        if not tbl[1] then
-            return true
-        end
-    until(false)
-
-    return false
+    return M.check_wave(tbl)
 end
 
 function M.check_wave(tbl)
+    utils.print_array(tbl)
     if hu_table.check(tbl) then
         return true
     end
@@ -269,6 +246,7 @@ end
 
 -- 检查是否匹配3*n + 2
 function M.check_wave_and_eye(tbl)
+    utils.print_array(tbl)
     local len = #tbl
     if len == 1 then
         return true
@@ -282,6 +260,7 @@ function M.check_wave_and_eye(tbl)
             end
 
             local tmp_tbl_1 = {}
+            local tmp_tbl_2 = {}
             for ii,vv in ipairs(tbl) do
                 table.insert(tmp_tbl_1, vv)
             end
@@ -310,10 +289,10 @@ function M.check_wave_and_eye(tbl)
                     break
                 end
             end
-
-            return true
         until(true)
     end
+
+    return true
 end
 
 function M.test()
