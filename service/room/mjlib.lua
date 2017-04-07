@@ -1,5 +1,3 @@
-local utils = require "utils"
-
 local CardType = {
     [0x10] = {min = 1, max = 9, chi = true},
     [0x20] = {min = 10, max = 18, chi = true},
@@ -110,11 +108,11 @@ function M.get_hu_info(hand_cards, waves, self_card, other_card)
     end
 
     local first_info = {
-        eye_count = 0       -- 能做成将的有几对
+        eye_count = 0,       -- 能做成将的有几对
         dui_count = 0,      -- 对子数量
         dui_array = {},
         peng_count = 0,     -- 刻子数量
-        normal_cards = {}   -- 普通牌
+        normal_cards = {},   -- 普通牌
         zi_cards = {}       -- 字牌
     }
 
@@ -140,7 +138,7 @@ function M.check_hu(cards, cfg, first_info)
                 return false
             end
 
-            first_info.eye_count == 0
+            first_info.eye_count = 1
         elseif count == 3 then
             first_info.peng_count = first_info.peng_count + 1
         end
@@ -192,10 +190,125 @@ function M.check_sub(tbl, info)
     end
 end
 
+local wave_tbl = {
+    [3] = 3, [4] = 3,
+
+    [31] = 30, [32] = 30, [33] = 33, [34] =  33, 
+
+    [44] = 33,
+
+    [111] = 111, [112] = 111, [113] = 111, [114] = 114,
+    [122] = 111, [123] = 111, [124] = 111,
+    [133] = 111, [134] = 111,
+    [141] = 141, [142] = 141, [143] = 141, [144] = 144,
+
+    [222] = 222, [223] = 222, [224] = 222,
+    [233] = 222, [234] = 222,
+    [244] = 222,
+
+    [311] = 300, [312] = 300, [313] = 300, [314] = 300,
+    [322] = 300, [323] = 300, [324] = 300,
+    [331] = 330, [332] = 330, [333] = 333, [334] = 333,
+    [341] = 330, [342] = 330, [343] = 330, [344] = 333,
+
+    [411] = 411, [412] = 411, [413] = 411, [414] = 414,
+    [422] = 411, [423] = 411, [424] = 411,
+    [433] = 411, [434] = 411,
+    [441] = 441, [442] = 441, [443] = 441, [444] = 444,
+}
+
+-- 检查是否匹配3*n + 2
+function M.check_wave(tbl)
+    repeat
+       local num = tbl[1]
+        if tbl[2] then
+            num = num*10 + tbl[2]
+            if tbl[3] then
+                num = num*10 + tbl[3]
+            end
+        end
+
+        local sub_value = wave_tbl[num]
+        if not sub_value then
+            return false
+        end
+
+        --print(sub_value)
+        if sub_value > 99 then
+            tbl[1] = tbl[1] - math.floor(sub_value/100)
+            tbl[2] = tbl[2] - math.floor(sub_value/10)%10
+            tbl[3] = tbl[3] - (sub_value%10)
+        elseif sub_value > 9 then
+            tbl[1] = tbl[1] - math.floor(sub_value/10)%10
+            tbl[2] = tbl[2] - (sub_value%10)
+        else
+            tbl[1] = tbl[1] - sub_value
+        end
+
+        while(tbl[1] == 0) do
+            table.remove(tbl, 1)
+        end
+
+        if not tbl[1] then
+            return true
+        end
+    until(false)
+
+    return false
+end
+
+-- 检查是否匹配3*n
+function M.check_wave_and_eye(tbl)
+    local len = #tbl
+    if len == 1 then
+        return true
+    end
+
+    -- 找出可能的所有将
+    for i,v in ipairs(tbl) do
+        repeat
+            if v < 2 then
+                break
+            end
+
+            local tmp_tbl_1 = {}
+            for ii,vv in ipairs(tbl) do
+                table.insert(tmp_tbl_1, vv)
+            end
+
+            if v > 2 then
+                tmp_tbl_1[i] = v - 2
+            else
+                if i == 1 then
+                    table.remove(tmp_tbl_1, 1)
+                elseif i == len then
+                    table.remove(tmp_tbl_1)
+                else
+                    for ii = i + 1, len do
+                        table.insert(tmp_tbl_2, tbl[ii])
+                    end
+                    tmp_tbl_1[i] = nil
+                end
+            end
+
+            if not M.check_wave(tmp_tbl_1) then
+                break
+            end
+
+            if next(tmp_tbl_2) then
+                if not M.check_wave(tmp_tbl_2) then
+                    break
+                end
+            end
+
+            return true
+        until(true)
+    end
+end
+
 function M.test()
     local t = M.create()
     M.shuffle(t)
-    utils.print(t)
 end
 
 return M
