@@ -1,3 +1,5 @@
+local hu_table = require "hu_table"
+
 local CardType = {
     [0x10] = {min = 1, max = 9, chi = true},
     [0x20] = {min = 10, max = 18, chi = true},
@@ -217,8 +219,8 @@ local wave_tbl = {
     [441] = 441, [442] = 441, [443] = 441, [444] = 444,
 }
 
--- 检查是否匹配3*n + 2
-function M.check_wave(tbl)
+-- 检查是否匹配
+function M.check_wave_old(tbl)
     repeat
        local num = tbl[1]
         if tbl[2] then
@@ -257,7 +259,15 @@ function M.check_wave(tbl)
     return false
 end
 
--- 检查是否匹配3*n
+function M.check_wave(tbl)
+    if hu_table.check(tbl) then
+        return true
+    end
+
+    return false
+end
+
+-- 检查是否匹配3*n + 2
 function M.check_wave_and_eye(tbl)
     local len = #tbl
     if len == 1 then

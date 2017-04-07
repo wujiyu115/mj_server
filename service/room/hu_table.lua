@@ -1,32 +1,6 @@
-local mjlib = require "mjlib"
+local M = {}
 
-local function test_wave()
-    math.randomseed(os.time())
-
-    for i=1,100 do
-        local tbl = {1,1,1,1,1,1}
-        local pt = {}
-        for j=1, 6 do
-            tbl[j] = math.random(1,4)
-            pt[j] = tbl[j]
-        end
-
-        local total = pt[1] + pt[2] + pt[3] + pt[4] + pt[5] + pt[6]
-
-        if total == 6 or total == 9 or total == 12 then
-            if mjlib.check_wave(tbl) then
-                print(pt[1],pt[2],pt[3],pt[4],pt[5],pt[6])
-                print("测试成功")
-            else
-                print(pt[1],pt[2],pt[3],pt[4],pt[5],pt[6])
-                print("测试失败")
-            end
-        end
-    end
-end
-
-local function simple_wave_test()
-    local tbl = {
+M.tbl = {
         {3},
         {3,3},
         -- 一组
@@ -129,22 +103,29 @@ local function simple_wave_test()
         {1,1,1,1,1,1,4,1,1},
         {1,1,1,1,1,1,1,4,1},
         {1,1,1,1,1,1,1,1,4},
-    }
+}
 
-    for _,v in ipairs(tbl) do
-        if not mjlib.check_wave(v) then
-            print("测试失败")
+local function gen_hash()
+    M.hash_tbl = {}
+    for _,v in ipairs(M.tbl) do
+        local num = 0
+        for _,c in ipairs(v) do
+            num = num*10 + c
         end
+
+        M.hash_tbl[num] = v
     end
-    print("测试完成")
 end
 
-local function test_wave_1()
-    mjlib.check_wave(tbl)
+gen_hash()
+
+function M.check(t)
+    local num = 0
+    for _,c in ipairs(t) do
+        num = num * 10 + c
+    end
+
+    return M.hash_tbl[num]
 end
 
-local function main()
-    simple_wave_test()
-end
-
-main()
+return M
