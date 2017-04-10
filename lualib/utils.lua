@@ -56,4 +56,22 @@ function M.print_array(o)
     print(str)
 end
 
+function M.dump_table_2_file(tbl, name)
+    local str = M.table_2_str(tbl)
+
+    str = "return "..str
+    local file = io.open(name, "w");
+    file:write(str)
+    file:close()
+end
+
+function M.copy_array(t)
+    local tmp = {}
+    for _,v in ipairs(t) do
+        table.insert(tmp, v)
+    end
+
+    return tmp
+end
+
 return M

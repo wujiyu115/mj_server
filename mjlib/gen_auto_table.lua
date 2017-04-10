@@ -43,16 +43,7 @@ local function test_hu_tbl(tbl)
     return ret
 end
 
-local function dump_auto_tbl()
-    local str = utils.table_2_str(auto_tbl)
-
-    str = "return "..str
-    local file = io.open("./auto_table.lua", "w");
-    file:write(str)
-    file:close()
-end
-
-local function main()
+local function gen_auto_table()
     local base_tbl = {}
     for _=1,33 do
         table.insert(base_tbl,0)
@@ -86,6 +77,59 @@ local function main()
     print("测试",count/10000,"万次,耗时",os.time() - start,"秒")
     print("失败次数:", fail_count)
     dump_auto_tbl()
+    utils.dump_table_2_file(auto_tbl, "./auto_table.lua")
+end
+
+local function gen_auto_table_with_eye()
+    local auto_table_with_eye = {}
+
+    local function add(item)
+        local num = 0
+        for i,v in ipairs(item) do
+            num = num * 10 + v
+        end
+        auto_table_with_eye[num] = true
+    end
+
+    local function get(num)
+        local t = {}
+        while(num > 0) do
+            local yushu = num%10
+            num = math.floor(num/10)
+            table.insert(t,1,yushu)
+        end
+        return t
+    end
+
+    for num,_ in pairs(auto_tbl) do
+        local t = get(num)
+        -- 在能加将的地方加一对牌
+        if #t < 9 then
+            local tmp = utils.copy_array(t)
+            utils.print_array(tmp)
+            table.insert(tmp,1,2)
+            add(tmp)
+
+            tmp = utils.copy_array(t)
+            table.insert(tmp,2)
+            add(tmp)
+        end
+
+        for i,c in ipairs(t) do
+            if c >= 2 then
+                local tmp = utils.copy_array(t)
+                tmp[i] = c - 2
+                add(tmp)
+            end
+        end
+    end
+
+    --utils.print_array(auto_table_with_eye)
+    utils.dump_table_2_file(auto_table_with_eye, "./auto_table_with_eye.lua")
+end
+
+local function main()
+    gen_auto_table_with_eye()
 end
 
 main()
