@@ -2,6 +2,7 @@ package.path = "../../lualib/?.lua;"..package.path
 
 local utils = require "utils"
 local hu_table = require "hu_table"
+local auto_table = require "auto_table"
 
 local CardType = {
     [0x10] = {min = 1, max = 9, chi = true},
@@ -158,7 +159,6 @@ function M.get_hu_info(hand_cards, waves, self_card, other_card)
 
     for color, cfg in pairs(CardType) do
         if cfg.chi and not M.check_hu_chi(hand_cards_tmp, cfg, first_info) then
-            utils.print(cfg)
             return false
         elseif not cfg.chi and not M.check_hu(hand_cards_tmp, cfg, first_info) then
             return false
@@ -236,17 +236,29 @@ function M.check_sub(tbl, info)
 end
 
 function M.check_wave(tbl)
-    utils.print_array(tbl)
-    if hu_table.check(tbl) then
+    --if auto_table.check(tbl) then
+        --return true
+    --end
+
+    return M.check_auto_table(tbl)
+end
+
+function M.check_auto_table(t)
+    local num = 0
+    for _,c in ipairs(t) do
+        num = num * 10 + c
+    end
+
+    if auto_table[num] then
         return true
     end
 
+    auto_table[num] = true
     return false
 end
 
 -- 检查是否匹配3*n + 2
 function M.check_wave_and_eye(tbl)
-    utils.print_array(tbl)
     local len = #tbl
     if len == 1 then
         return true

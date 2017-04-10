@@ -69,6 +69,60 @@ local function add_dui(tbl)
     end
 end
 
+local function test_one()
+    -- 6万6万6万4筒4筒4筒4条4条5条5条6条6条发发
+    local t = {
+        0,0,0,   0,0,3,   0,0,0,
+        0,0,0,   3,0,0,   0,0,0,
+        0,0,0,   2,2,2,   0,0,0,
+        0,0,0,0, 0,2,0}
+    if not mjlib.get_hu_info(t) then
+        print("测试失败")
+    end
+end
+
+local function test_hu_tbl()
+    local tbl = {}
+    for i=1,34 do
+        table.insert(tbl,0)
+    end
+
+    for i=1,4 do
+        if math.random(1,5) <= 1 then
+            while(true) do
+                local index = math.random(1,9)
+                if tbl[index] <= 1 then
+                    tbl[index] = tbl[index] + 3
+                    break
+                end
+            end
+        else
+            while(true) do
+                local index = math.random(1, 7)
+                if tbl[index] < 4 and tbl[index + 1] < 4 and tbl[index + 2] < 4 then
+                    tbl[index] = tbl[index] + 1
+                    tbl[index + 1] = tbl[index + 1] + 1
+                    tbl[index + 2] = tbl[index + 2] + 1
+                    break
+                end
+            end
+        end
+    end
+
+    while(true) do
+        local index = math.random(1,34)
+        if tbl[index] <= 2 then
+            tbl[index] = tbl[index] + 2
+            break
+        end
+    end
+    if not mjlib.get_hu_info(tbl) then
+        utils.print_array(tbl)
+        print("测试失败")
+        assert(false)
+    end
+end
+
 local function test_hu()
     math.randomseed(os.time())
     local t = {}
@@ -93,7 +147,13 @@ local function test_hu()
 end
 
 local function main()
-    test_hu()
+    local start = os.time()
+    math.randomseed(os.time())
+    local count = 100000
+    for i=1,count do
+        test_hu_tbl()
+    end
+    print("测试",count,"次,耗时",os.time() - start)
 end
 
 main()
