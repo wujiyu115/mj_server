@@ -138,6 +138,26 @@ function M.can_right_chi(hand_cards, card)
     return M.can_chi(hand_cards, card - 2, card - 1)
 end
 
+function M.check_qinyise()
+
+end
+
+function M.check_7dui(hand_cards, waves)
+    if #waves > 0 then return false
+
+    for _,c in ipairs(hand_cards) do
+        if c % 2 ~= 0 then
+            return false
+        end
+    end
+
+    return true
+end
+
+function M.check_pengpeng()
+
+end
+
 function M.get_hu_info(hand_cards, waves, self_card, other_card)
     local hand_cards_tmp = {}
     for i,v in ipairs(hand_cards) do
