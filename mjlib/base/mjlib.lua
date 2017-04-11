@@ -143,7 +143,7 @@ function M.check_qinyise()
 end
 
 function M.check_7dui(hand_cards, waves)
-    if #waves > 0 then return false
+    if #waves > 0 then return false end
 
     for _,c in ipairs(hand_cards) do
         if c % 2 ~= 0 then

@@ -10,7 +10,7 @@ local M = {
 
 function M:connect(ip, port)
     local fd = socket.open(ip, port)
-    if fd then
+    if not fd then
         skynet.error("连接 "..ip..":"..port.."成功")
         return
     end
@@ -47,7 +47,7 @@ function M:data(fd, str)
         return
     end
 
-    info.last = info.last .. str
+    local last = info.last .. str
 
     local len
     local pack_list = {}
@@ -63,12 +63,14 @@ function M:data(fd, str)
         last = last:sub(3 + len) or ""
     until(false)
 
+    info.last = last
+
     for _,v in ipairs(pack_list) do
         self:deal_package(fd, v)
     end
 end
 
-function M:deal_package(fd, data)
+function M:deal_package(data)
     local id, param_str = string.unpack(">Hs2", data)
     print("recv package:", id, param_str)
 
@@ -76,7 +78,6 @@ function M:deal_package(fd, data)
     local param = utils.str_2_table(param_str)
 
     self:dispatch_msg(name, param)
-        fd = assert(socket.connect(msg.ip, tonumber(msg.port)))
 end
 
 function M:close(fd)
@@ -104,7 +105,7 @@ function M:dispatch_msg(name, param)
         return
     end
     if info.obj then
-        info.handler(obj, param)
+        info.handler(info.obj, param)
     else
         info.handler(param)
     end
