@@ -1,24 +1,22 @@
 package.path = "../../lualib/?.lua;"..package.path
 
 local utils = require "utils"
-local wave_table = require "auto_table"
-local wave_table_eye = require "auto_table_with_eye"
 
-local CardType = {
+local M = {}
+
+M.CardType = {
     [0x10] = {min = 1, max = 9, chi = true},
     [0x20] = {min = 10, max = 18, chi = true},
     [0x30] = {min = 19, max = 27, chi = true},
     [0x40] = {min = 28, max = 34, chi = false},
 }
 
-local CardDefine = {
+M.CardDefine = {
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, -- 万
     0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, -- 筒
     0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, -- 条
     0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, -- 东、南、西、北、中、发、白
 }
-
-local M = {}
 
 M.COLOR_WAN = 0x10
 M.COLOR_TONG = 0x20
@@ -136,190 +134,6 @@ end
 
 function M.can_right_chi(hand_cards, card)
     return M.can_chi(hand_cards, card - 2, card - 1)
-end
-
-function M.check_qinyise()
-
-end
-
-function M.check_7dui(hand_cards, waves)
-    if #waves > 0 then return false end
-
-    for _,c in ipairs(hand_cards) do
-        if c % 2 ~= 0 then
-            return false
-        end
-    end
-
-    return true
-end
-
-function M.check_pengpeng()
-
-end
-
-function M.get_hu_info(hand_cards, waves, self_card, other_card)
-    local hand_cards_tmp = {}
-    for i,v in ipairs(hand_cards) do
-        hand_cards_tmp[i] = v
-    end
-
-    if other_card then
-        hand_cards_tmp[other_card] = hand_cards_tmp[other_card] + 1
-    end
-
-    local first_info = {
-        eye = false,            -- 当前是否有将
-        dui_array = {},
-    }
-
-    for color, cfg in pairs(CardType) do
-        if cfg.chi and not M.check_color_chi(hand_cards_tmp, cfg, first_info) then
-            return false
-        elseif not cfg.chi and not M.check_color(hand_cards_tmp, cfg, first_info) then
-            return false
-        end
-    end
-
-    return true
-end
-
-function M.check_color(cards, cfg, info)
-    for i = cfg.min, cfg.max do
-        local count = cards[i]
-
-        if count == 1 or count == 4 then
-            return false
-        end
-
-        if count == 2 then
-            if info.eye then
-                return false
-            end
-
-            info.eye = true
-        end
-    end
-
-    return true
-end
-
-function M.check_color_chi(cards, cfg, info)
-    local tbl = {}
-    for i = cfg.min, cfg.max do
-        repeat
-            local count = cards[i]
-            if count > 0 then
-                table.insert(tbl, count)
-            else
-                if #tbl == 0 then
-                    break
-                end
-
-                if not M.check_sub(tbl, info) then
-                    return false
-                end
-                tbl = {}
-            end
-        until(true)
-    end
-
-    return true
-end
-
-function M.check_sub(tbl, info)
-    local count = 0
-    for _,v in ipairs(tbl) do
-        count = count + v
-    end
-    local yu = (count % 3)
-
-    if yu == 1 then
-        return false
-    elseif yu == 2 then
-        if info.eye then
-            return false
-        end
-
-        return M.check_wave_and_eye(tbl)
-    end
-
-    return M.check_wave(tbl)
-end
-
-function M.check_wave(tbl)
-    local num = 0
-    for _,c in ipairs(tbl) do
-        num = num * 10 + c
-    end
-
-    if wave_table[num] then
-        return true
-    end
-
-    wave_table[num] = true
-    return false
-end
-
--- 检查是否匹配3*n + 2
-function M.check_wave_and_eye(tbl)
-    if #tbl == 1 then
-        return true
-    end
-
-    local num = 0
-    for _,c in ipairs(tbl) do
-        num = num * 10 + c
-    end
-
-    if wave_table_eye[num] then
-        return true
-    end
-
-    local len = #tbl
-    -- 拆出可能的眼位，再判断
-    for i,v in ipairs(tbl) do
-        repeat
-            if v < 2 then
-                break
-            end
-
-            local tmp_tbl_1 = {}
-            local tmp_tbl_2 = {}
-            for ii,vv in ipairs(tbl) do
-                table.insert(tmp_tbl_1, vv)
-            end
-
-            if v > 2 then
-                tmp_tbl_1[i] = v - 2
-            else
-                if i == 1 then
-                    table.remove(tmp_tbl_1, 1)
-                elseif i == len then
-                    table.remove(tmp_tbl_1)
-                else
-                    for ii = i + 1, len do
-                        table.insert(tmp_tbl_2, tbl[ii])
-                    end
-                    tmp_tbl_1[i] = nil
-                end
-            end
-
-            if not M.check_wave(tmp_tbl_1) then
-                break
-            end
-
-            if next(tmp_tbl_2) then
-                if not M.check_wave(tmp_tbl_2) then
-                    break
-                end
-            end
-
-            return true
-        until(true)
-    end
-
-    return false
 end
 
 return M

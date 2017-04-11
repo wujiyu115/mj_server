@@ -2,6 +2,7 @@ package.path = "../../lualib/?.lua;"..package.path
 
 local utils = require "utils"
 local mjlib = require "mjlib"
+local hulib = require "hulib"
 
 local function add_ke(tbl)
     while(true) do
@@ -46,7 +47,7 @@ local function test_one()
         0,0,0,   3,0,0,   0,0,0,
         0,0,0,   2,2,2,   0,0,0,
         0,0,0,0, 0,2,0}
-    if not mjlib.get_hu_info(t) then
+    if not hulib.get_hu_info(t) then
         print("测试失败")
     end
 end
@@ -71,7 +72,7 @@ local function test_hu_sub(t, num)
                 end
             end
 
-            if valid and not mjlib.get_hu_info(t) then
+            if valid and not hulib.get_hu_info(t) then
                 print("测试失败")
                 utils.print_array(t)
             end

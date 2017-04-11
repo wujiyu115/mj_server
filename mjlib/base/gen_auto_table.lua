@@ -3,6 +3,7 @@ package.path = "../../lualib/?.lua;"..package.path
 local auto_table = require "auto_table"
 local utils = require "utils"
 local mjlib = require "mjlib"
+local hulib = require "hulib"
 
 local tested_tbl = {}
 
@@ -35,7 +36,7 @@ local function check_hu(t)
 
     tested_tbl[num] = true
 
-    if not mjlib.get_hu_info(t) then
+    if not hulib.get_hu_info(t) then
         print("测试失败")
         utils.print_array(t)
     end
