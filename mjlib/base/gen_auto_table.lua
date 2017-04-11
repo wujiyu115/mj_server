@@ -1,34 +1,12 @@
 package.path = "../../lualib/?.lua;"..package.path
 
-local auto_tbl = require "auto_table"
+local auto_table = require "auto_table"
 local utils = require "utils"
 local mjlib = require "mjlib"
 
 local tested_tbl = {}
 
-local function test_hu_tbl(tbl)
-    for _=1,4 do
-        if math.random(1,5) <= 1 then
-            while(true) do
-                local index = math.random(1,9)
-                if tbl[index] <= 1 then
-                    tbl[index] = tbl[index] + 3
-                    break
-                end
-            end
-        else
-            while(true) do
-                local index = math.random(1, 7)
-                if tbl[index] < 4 and tbl[index + 1] < 4 and tbl[index + 2] < 4 then
-                    tbl[index] = tbl[index] + 1
-                    tbl[index + 1] = tbl[index + 1] + 1
-                    tbl[index + 2] = tbl[index + 2] + 1
-                    break
-                end
-            end
-        end
-    end
-
+local function add_cache(t)
     local num = 0
     for i=1,9 do
         num = num * 10 + tbl[i]
@@ -37,47 +15,71 @@ local function test_hu_tbl(tbl)
     if tested_tbl[num] then
         return true
     end
+end
 
-    local ret = mjlib.get_hu_info(tbl)
-    tested_tbl[num] = ret
-    return ret
+local function check_hu(t)
+    for i=1,34 do
+        if t[i] > 4 then
+            return
+        end
+    end
+
+    local num = 0
+    for i=1,9 do
+        num = num * 10 + t[i]
+    end
+
+    if tested_tbl[num] then
+        return
+    end
+
+    tested_tbl[num] = true
+
+    if not mjlib.get_hu_info(t) then
+        print("测试失败")
+        utils.print_array(t)
+    end
+end
+
+local function test_hu_sub(t, num)
+    for j=1,16 do
+        if j<= 9 then
+            t[j] = t[j] + 3
+        else
+            local index = j - 9
+            t[index] = t[index] + 1
+            t[index + 1] = t[index + 1] + 1
+            t[index + 2] = t[index + 2] + 1
+        end
+
+        if num == 4 then
+            check_hu(t)
+       else
+            test_hu_sub(t, num + 1)
+        end
+
+        if j<= 9 then
+            t[j] = t[j] - 3
+        else
+            local index = j - 9
+            t[index] = t[index] - 1
+            t[index + 1] = t[index + 1] - 1
+            t[index + 2] = t[index + 2] - 1
+        end
+    end
 end
 
 local function gen_auto_table()
-    local base_tbl = {}
-    for _=1,33 do
-        table.insert(base_tbl,0)
+    local t = {}
+    for i=1,33 do
+        table.insert(t,0)
     end
 
-    table.insert(base_tbl,2)
+    table.insert(t,2)
 
-    local tbl = {}
-    for _=1,34 do
-        table.insert(tbl,0)
-    end
+    test_hu_sub(t, 1)
 
-    local start = os.time()
-    math.randomseed(os.time())
-    local count = 10000*10000
-    local fail_count = 0
-    local percent = 0
-    for i=1,count do
-        for i=1,34 do
-            tbl[i] = base_tbl[i]
-        end
-
-        if not test_hu_tbl(tbl) then
-            fail_count = fail_count + 1
-        end
-        if i % (100*10000) == 0 then
-            percent = percent + 1
-            print("完成"..percent.."%")
-        end
-    end
-    print("测试",count/10000,"万次,耗时",os.time() - start,"秒")
-    print("失败次数:", fail_count)
-    dump_auto_tbl()
-    utils.dump_table_2_file(auto_tbl, "./auto_table.lua")
+    utils.dump_table_2_file(auto_table, "./auto_table.lua")
 end
 
 local function gen_auto_table_with_eye()
@@ -101,7 +103,7 @@ local function gen_auto_table_with_eye()
         return t
     end
 
-    for num,_ in pairs(auto_tbl) do
+    for num,_ in pairs(auto_table) do
         local t = get(num)
         -- 在能加将的地方加一对牌
         if #t < 9 then
@@ -129,6 +131,7 @@ local function gen_auto_table_with_eye()
 end
 
 local function main()
+    gen_auto_table()
     gen_auto_table_with_eye()
 end
 

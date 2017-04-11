@@ -256,6 +256,8 @@ function M.check_wave(tbl)
     if wave_table[num] then
         return true
     end
+
+    wave_table[num] = true
     return false
 end
 
