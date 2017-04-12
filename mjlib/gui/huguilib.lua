@@ -1,8 +1,51 @@
 package.path = "../../lualib/?.lua;"..package.path
 local utils = require "utils"
-local wave_table = require "auto_table"
-local wave_table_eye = require "auto_table_with_eye"
+local no_gui_table = require "no_gui_table"
+local no_gui_eye_table = require "no_gui_eye_table"
+local one_gui_table = require "one_gui_table"
+local one_gui_eye_table = require "one_gui_eye_table"
+local two_gui_table = require "two_gui_table"
+local two_gui_eye_table = require "two_gui_eye_table"
+local three_gui_table = require "three_gui_table"
+local three_gui_eye_table = require "three_gui_eye_table"
+local four_gui_table = require "four_gui_table"
+local four_gui_eye_table = require "four_gui_eye_table"
+
+local no_gui_feng_table = require "no_gui_feng_table"
+local no_gui_feng_eye_table = require "no_gui_feng_eye_table"
+local one_gui_feng_table = require "one_gui_feng_table"
+local one_gui_feng_eye_table = require "one_gui_feng_eye_table"
+local two_gui_feng_table = require "two_gui_feng_table"
+local two_gui_feng_eye_table = require "two_gui_feng_eye_table"
+local three_gui_feng_table = require "three_gui_feng_table"
+local three_gui_feng_eye_table = require "three_gui_feng_eye_table"
+local four_gui_feng_table = require "four_gui_feng_table"
+local four_gui_feng_eye_table = require "four_gui_feng_eye_table"
+
 local mjlib = require "mjlib"
+
+local split_table = {
+    {min = 1,  max = 9,  chi = true},
+    {min = 10, max = 18, chi = true}
+    {min = 19, max = 27, chi = true}
+    {min = 28, max = 34, chi = false}
+}
+
+local check_table = {
+    [0] = {no_gui_table,    no_gui_eye_table},
+    [1] = {one_gui_table,   one_gui_eye_table},
+    [2] = {two_gui_table,   two_gui_eye_table},
+    [3] = {three_gui_table, three_gui_eye_table},
+    [4] = {four_gui_table,  four_gui_eye_table},
+}
+
+local check_feng_table = {
+    [0] = {no_gui_feng_table,   no_gui_feng_eye_table},
+    [1] = {one_gui_feng_table,  one_gui_feng_eye_table},
+    [2] = {two_gui_feng_table,  two_gui_feng_eye_table},
+    [3] = {three_gui_feng_table,three_gui_feng_eye_table},
+    [4] = {four_gui_feng_table, four_gui_feng_eye_table},
+}
 
 local M = {}
 
@@ -22,56 +65,42 @@ function M.check_pengpeng()
 
 end
 
-function M.get_hu_info(hand_cards, waves, laizi_index)
+function M.get_hu_info(hand_cards, waves, gui_index)
     local hand_cards_tmp = {}
     for i,v in ipairs(hand_cards) do
         hand_cards_tmp[i] = v
     end
 
-    local first_info = {
-        eye = false,            -- 当前是否有将
-        sub_array = {{},{},{}},
-        laizi_num = hand_cards_tmp[laizi_index],
-    }
+    local gui_num = hand_cards_tmp[gui_index]
+    hand_cards_tmp[gui_index] = 0
 
-    hand_cards_tmp[laizi_index] = 0
-
-    if not M.deal_feng(hand_cards_tmp, info) then
-        return false
-    end
+    local tbl = M.split_info(hand_cards_tmp, gui_num)
 
     -- 检查完美匹配
     return true
 end
 
-function M.deal_feng(hand_cards_tmp, info)
-    local count = {0, 0, 0, 0}
-    for i=28,34 do
-        local n = hand_cards_tmp[i]
-        if n > 0 then
-            count[n] = count[n] + 1
+function M.check_table(key, num, gui_num, chi)
+    if not chi then
+
+    end
+end
+
+-- 根据花色切分
+function M.split_info(t, gui_num)
+    for _,v in ipairs(check_table) do
+        local key = 0
+        local num = 0
+        for i=v.min,v.max do
+            key = key*10 + t[i]
+            num = num + t[i]
+        end
+
+        local t = {}
+        for i=0, gui_num do
+           
         end
     end
-
-    if (count[4] > 0 or count[2] > 1) and info.laizi_num <= 0 then
-        return false
-    end
-
-    if count[4] > 0 then
-        count[4] = count[4] - 1
-        info.eye = true
-        info.laizi_num = info.laizi_num - 1
-    elseif count[2] > 0 then
-        info.eye = true
-        count[2] = count[2] - 1
-    end
-
-    local need_laizi = count[2] + 2*count[4]
-    if need_laizi > info.laizi_num then
-        return false
-    end
-
-    info.laizi_num = info.laizi_num - need_laizi
 end
 
 function M.deal_perfect(hand_cards_tmp, info)
