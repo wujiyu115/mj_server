@@ -25,11 +25,13 @@ local function add_2_table(t, tbl, eye_tbl)
     if c%3 == 0 then
         tbl[n] = true
     else
-        eye_tbl = true
+        eye_tbl[n] = true
     end
 end
 
 local function parse_table(t)
+    add_2_table(t, no_gui_table, no_gui_eye_table)
+
     local tbl = {}
     for i=1,9 do
         local n = t[i]
@@ -72,6 +74,7 @@ local function check_hu(t)
         --utils.print_array(t)
         fail_count = fail_count + 1
     else
+        parse_table(t)
         hu_count = hu_count + 1
     end
 end
@@ -121,7 +124,14 @@ local function gen_auto_gui_table()
         table.insert(t,0)
     end
 
-    test_hu_sub(t, 1)
+    for i=1,18 do
+        print("将",i)
+        t[i] = 2
+        test_hu_sub(t, 1)
+        t[i] = 0
+    end
+
+
     utils.dump_table_2_file(no_gui_table, "./no_gui_table.lua")
     utils.dump_table_2_file(no_gui_eye_table, "./no_gui_eye_table.lua")
 
@@ -134,10 +144,13 @@ local function gen_auto_gui_table()
         no_gui_count = no_gui_count + 1
     end
 
-    local
+    local no_gui_eye_count = 0
     for _,_ in pairs(no_gui_eye_table) do
-
+        no_gui_eye_count = no_gui_eye_count + 1
     end
+
+    print("表大小", no_gui_count)
+    print("将表大小", no_gui_eye_count)
 end
 
 local function main()
