@@ -22,46 +22,90 @@ function M.check_pengpeng()
 
 end
 
-function M.get_hu_info(hand_cards, waves, self_card, other_card)
+function M.get_hu_info(hand_cards, waves, laizi_index)
     local hand_cards_tmp = {}
     for i,v in ipairs(hand_cards) do
         hand_cards_tmp[i] = v
     end
 
-    if other_card then
-        hand_cards_tmp[other_card] = hand_cards_tmp[other_card] + 1
-    end
-
     local first_info = {
         eye = false,            -- 当前是否有将
-        dui_array = {},
+        sub_array = {{},{},{}},
+        laizi_num = hand_cards_tmp[laizi_index],
     }
 
-    for color, cfg in pairs(mjlib.CardType) do
-        if cfg.chi and not M.check_color_chi(hand_cards_tmp, cfg, first_info) then
-            return false
-        elseif not cfg.chi and not M.check_color(hand_cards_tmp, cfg, first_info) then
-            return false
-        end
+    hand_cards_tmp[laizi_index] = 0
+
+    if not M.deal_feng(hand_cards_tmp, info) then
+        return false
     end
 
+    -- 检查完美匹配
     return true
 end
 
-function M.check_color(cards, cfg, info)
-    for i = cfg.min, cfg.max do
-        local count = cards[i]
-
-        if count == 1 or count == 4 then
-            return false
+function M.deal_feng(hand_cards_tmp, info)
+    local count = {0, 0, 0, 0}
+    for i=28,34 do
+        local n = hand_cards_tmp[i]
+        if n > 0 then
+            count[n] = count[n] + 1
         end
+    end
 
-        if count == 2 then
-            if info.eye then
+    if (count[4] > 0 or count[2] > 1) and info.laizi_num <= 0 then
+        return false
+    end
+
+    if count[4] > 0 then
+        count[4] = count[4] - 1
+        info.eye = true
+        info.laizi_num = info.laizi_num - 1
+    elseif count[2] > 0 then
+        info.eye = true
+        count[2] = count[2] - 1
+    end
+
+    local need_laizi = count[2] + 2*count[4]
+    if need_laizi > info.laizi_num then
+        return false
+    end
+
+    info.laizi_num = info.laizi_num - need_laizi
+end
+
+function M.deal_perfect(hand_cards_tmp, info)
+    for i=1,3 do
+        M.deal_perfect_sub(hand_cards_tmp, info, i)
+    end
+end
+
+function M.deal_perfect_sub(hand_cards_tmp, info, i)
+    local list = {}
+    local tbl = {}
+    for i = cfg.min, cfg.max do
+        repeat
+            local count = cards[i]
+            if count > 0 then
+                table.insert(tbl, count)
+            else
+                if #tbl == 0 then
+                    break
+                end
+
+               table.insert(list, tbl)
+               tbl = {}
+            end
+        until(true)
+    end
+
+    for i,v in ipairs(list) do
+        if M.check_wave(list) then
+            list[i] = false
+        else
+            if info.laizi_num <= 0 then
                 return false
             end
-
-            info.eye = true
         end
     end
 
