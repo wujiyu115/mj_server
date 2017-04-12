@@ -1,46 +1,81 @@
 package.path = "../../lualib/?.lua;"..package.path
 
 local utils = require "utils"
-local mjlib = require "mjlib"
 local hulib = require "hulib"
 
 local no_gui_table = {}
 local one_gui_table = {}
+local two_gui_table = {}
 local three_gui_table = {}
 local four_gui_table = {}
 
 local no_gui_eye_table = {}
 local one_gui_eye_table = {}
+local two_gui_eye_table = {}
 local three_gui_eye_table = {}
 local four_gui_eye_table = {}
 
-local function add_2_table(t, tbl, eye_tbl)
+local function add_2_table(t, tbl)
     local n = 0
-    local c = 0
     for i=1,9 do
         n = n*10 + t[i]
-        c = c + t[i]
     end
 
-    if c%3 == 0 then
-        tbl[n] = true
-    else
-        eye_tbl[n] = true
-    end
+    tbl[n] = true
 end
 
-local function parse_table(t)
-    add_2_table(t, no_gui_table, no_gui_eye_table)
-
-    local tbl = {}
+local function parse_table_sub(t, num, eye)
+    local tbl
+    local eye_tbl
+    if num == 1 then
+        tbl = one_gui_table
+        eye_tbl = one_gui_eye_table
+    elseif num == 2 then
+        tbl = two_gui_table
+        eye_tbl = two_gui_eye_table
+    elseif num == 3 then
+        tbl = three_gui_table
+        eye_tbl = three_gui_eye_table
+    elseif num == 4 then
+        tbl = four_gui_table
+        eye_tbl = four_gui_eye_table
+    end
     for i=1,9 do
         local n = t[i]
         if n > 0 then
             t[i] = n - 1
-            add_2_table(t, no_gui_table, no_gui_eye_table)
+            if not eye then
+                add_2_table(t, tbl)
+            else
+                add_2_table(t, eye_tbl)
+            end
+            if num < 4 then
+                parse_table_sub(t, num+1, eye)
+            end
             t[i] = n
         end
     end
+end
+
+local function parse_table(t)
+    local count = 0
+    for i=1,9 do
+        count = count + t[i]
+    end
+
+    local eye = false
+    if count % 3 ~= 0 then
+        eye = true
+    end
+
+    if not eye then
+        add_2_table(t, no_gui_table)
+        parse_table_sub(t, 1, false)
+    else
+        add_2_table(t, no_gui_eye_table)
+        parse_table_sub(t, 1, true)
+    end
+
 end
 
 local total_count=0
@@ -64,7 +99,7 @@ local function check_hu(t)
     end
 
     if tested_tbl[num] then
---        return
+        return
     end
 
     tested_tbl[num] = true
@@ -120,7 +155,7 @@ end
 
 local function gen_auto_gui_table()
     local t = {}
-    for i=1,34 do
+    for _=1,34 do
         table.insert(t,0)
     end
 
@@ -130,15 +165,12 @@ local function gen_auto_gui_table()
         test_hu_sub(t, 1)
         t[i] = 0
     end
-
-
-    utils.dump_table_2_file(no_gui_table, "./no_gui_table.lua")
-    utils.dump_table_2_file(no_gui_eye_table, "./no_gui_eye_table.lua")
-
     print("总数", total_count)
     print("胡", hu_count)
     print("失败", fail_count)
  
+    utils.dump_table_2_file(no_gui_table, "./no_gui_table.lua")
+    utils.dump_table_2_file(no_gui_eye_table, "./no_gui_eye_table.lua")
     local no_gui_count = 0
     for _,_ in pairs(no_gui_table) do
         no_gui_count = no_gui_count + 1
@@ -149,8 +181,69 @@ local function gen_auto_gui_table()
         no_gui_eye_count = no_gui_eye_count + 1
     end
 
-    print("表大小", no_gui_count)
-    print("将表大小", no_gui_eye_count)
+    print("没有鬼表大小", no_gui_count)
+    print("没有鬼将表大小", no_gui_eye_count)
+
+    utils.dump_table_2_file(one_gui_table, "./one_gui_table.lua")
+    utils.dump_table_2_file(one_gui_eye_table, "./one_gui_eye_table.lua")
+    local one_gui_count = 0
+    for _,_ in pairs(one_gui_table) do
+        one_gui_count = one_gui_count + 1
+    end
+
+    local one_gui_eye_count = 0
+    for _,_ in pairs(one_gui_eye_table) do
+        one_gui_eye_count = one_gui_eye_count + 1
+    end
+
+    print("1鬼表大小", one_gui_count)
+    print("1鬼将表大小", one_gui_eye_count)
+
+    utils.dump_table_2_file(two_gui_table, "./two_gui_table.lua")
+    utils.dump_table_2_file(two_gui_eye_table, "./two_gui_eye_table.lua")
+    local two_gui_count = 0
+    for _,_ in pairs(two_gui_table) do
+        two_gui_count = two_gui_count + 1
+    end
+
+    local two_gui_eye_count = 0
+    for _,_ in pairs(two_gui_eye_table) do
+        two_gui_eye_count = two_gui_eye_count + 1
+    end
+
+    print("2鬼表大小", two_gui_count)
+    print("2鬼将表大小", two_gui_eye_count)
+
+    utils.dump_table_2_file(three_gui_table, "./three_gui_table.lua")
+    utils.dump_table_2_file(three_gui_eye_table, "./three_gui_eye_table.lua")
+    local three_gui_count = 0
+    for _,_ in pairs(three_gui_table) do
+        three_gui_count = three_gui_count + 1
+    end
+
+    local three_gui_eye_count = 0
+    for _,_ in pairs(three_gui_eye_table) do
+        three_gui_eye_count = three_gui_eye_count + 1
+    end
+
+    print("3鬼表大小", three_gui_count)
+    print("3鬼将表大小", three_gui_eye_count)
+
+    utils.dump_table_2_file(four_gui_table, "./four_gui_table.lua")
+    utils.dump_table_2_file(four_gui_eye_table, "./four_gui_eye_table.lua")
+
+    local four_gui_count = 0
+    for _,_ in pairs(four_gui_table) do
+        four_gui_count = four_gui_count + 1
+    end
+
+    local four_gui_eye_count = 0
+    for _,_ in pairs(four_gui_eye_table) do
+        four_gui_eye_count = four_gui_eye_count + 1
+    end
+
+    print("4鬼表大小", four_gui_count)
+    print("4鬼将表大小", four_gui_eye_count)
 end
 
 local function main()
