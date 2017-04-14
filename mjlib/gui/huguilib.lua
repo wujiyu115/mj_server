@@ -26,29 +26,44 @@ local mjlib = require "mjlib"
 
 local split_table = {
     {min = 1,  max = 9,  chi = true},
-    {min = 10, max = 18, chi = true}
-    {min = 19, max = 27, chi = true}
+    {min = 10, max = 18, chi = true},
+    {min = 19, max = 27, chi = true},
     {min = 28, max = 34, chi = false}
 }
 
 local check_table = {
-    [0] = {no_gui_table,    no_gui_eye_table},
-    [1] = {one_gui_table,   one_gui_eye_table},
-    [2] = {two_gui_table,   two_gui_eye_table},
-    [3] = {three_gui_table, three_gui_eye_table},
-    [4] = {four_gui_table,  four_gui_eye_table},
+    [0] = no_gui_table,
+    [1] = one_gui_table,
+    [2] = two_gui_table,
+    [3] = three_gui_table,
+    [4] = four_gui_table
+}
+
+local check_eye_table = {
+    [0] = no_gui_eye_table,
+    [1] = one_gui_eye_table,
+    [2] = two_gui_eye_table,
+    [3] = three_gui_eye_table,
+    [4] = four_gui_eye_table
 }
 
 local check_feng_table = {
-    [0] = {no_gui_feng_table,   no_gui_feng_eye_table},
-    [1] = {one_gui_feng_table,  one_gui_feng_eye_table},
-    [2] = {two_gui_feng_table,  two_gui_feng_eye_table},
-    [3] = {three_gui_feng_table,three_gui_feng_eye_table},
-    [4] = {four_gui_feng_table, four_gui_feng_eye_table},
+    [0] = no_gui_feng_table,
+    [1] = one_gui_feng_table,
+    [2] = two_gui_feng_table,
+    [3] = three_gui_feng_table,
+    [4] = four_gui_feng_table
+}
+
+local check_feng_eye_table = {
+    [0] = no_gui_feng_eye_table,
+    [1] = one_gui_feng_eye_table,
+    [2] = two_gui_feng_eye_table,
+    [3] = three_gui_feng_eye_table,
+    [4] = three_gui_feng_eye_table,
 }
 
 local M = {}
-
 function M.check_7dui(hand_cards, waves)
     if #waves > 0 then return false end
 
@@ -74,21 +89,54 @@ function M.get_hu_info(hand_cards, waves, gui_index)
     local gui_num = hand_cards_tmp[gui_index]
     hand_cards_tmp[gui_index] = 0
 
-    local tbl = M.split_info(hand_cards_tmp, gui_num)
+    local splited_tbl = M.split_info(hand_cards_tmp, gui_num)
+    if not splited_tbl then
+        print("切分失败")
+        return false
+    end
 
-    -- 检查完美匹配
-    return true
+    utils.print_array(splited_tbl)
+    return M.check_probability(splited_tbl, gui_num)
 end
 
-function M.check_table(key, num, gui_num, chi)
+function M.check_table(key, gui_num, eye, chi)
     if not chi then
-
+        if eye then
+            return check_eye_table[gui_num]
+        else
+            return check_table[gui_num]
+        end
     end
+
+    if eye then
+        return check_feng_eye_table[gui_num]
+    else
+        return check_feng_table[gui_num]
+    end
+end
+
+function M.list_probability(gui_num, num, key, chi)
+    local t = {}
+    for i=0, gui_num do
+        local yu = (num + i)%3
+        if yu == 0 then
+            if M.check_table(num, i, false, chi) then
+                table.insert(t, {eye = false, gui_num = i})
+            end
+        elseif yu == 2 then
+            if M.check_table(num, i, true, chi) then
+                table.insert(t, {eye = true, gui_num = i})
+            end
+        end
+    end
+
+    return t
 end
 
 -- 根据花色切分
 function M.split_info(t, gui_num)
-    for _,v in ipairs(check_table) do
+    local ret = {}
+    for _,v in ipairs(split_table) do
         local key = 0
         local num = 0
         for i=v.min,v.max do
@@ -96,164 +144,77 @@ function M.split_info(t, gui_num)
             num = num + t[i]
         end
 
-        local t = {}
-        for i=0, gui_num do
-           
-        end
-    end
-end
-
-function M.deal_perfect(hand_cards_tmp, info)
-    for i=1,3 do
-        M.deal_perfect_sub(hand_cards_tmp, info, i)
-    end
-end
-
-function M.deal_perfect_sub(hand_cards_tmp, info, i)
-    local list = {}
-    local tbl = {}
-    for i = cfg.min, cfg.max do
-        repeat
-            local count = cards[i]
-            if count > 0 then
-                table.insert(tbl, count)
-            else
-                if #tbl == 0 then
-                    break
-                end
-
-               table.insert(list, tbl)
-               tbl = {}
-            end
-        until(true)
-    end
-
-    for i,v in ipairs(list) do
-        if M.check_wave(list) then
-            list[i] = false
-        else
-            if info.laizi_num <= 0 then
+        if num > 0 then
+            local t = M.list_probability(gui_num, num, key, v.chi)
+            if #t == 0 then
+                print(v.min, v.max, key, num, gui_num)
                 return false
             end
+            table.insert(ret, t)
         end
     end
 
-    return true
+    return ret
 end
 
-function M.check_color_chi(cards, cfg, info)
-    local tbl = {}
-    for i = cfg.min, cfg.max do
+function M.check_probability_sub(splited_table, info, level)
+    for _,v in ipairs(splited_table[level]) do
         repeat
-            local count = cards[i]
-            if count > 0 then
-                table.insert(tbl, count)
-            else
-                if #tbl == 0 then
-                    break
-                end
-
-                if not M.check_sub(tbl, info) then
-                    return false
-                end
-                tbl = {}
-            end
-        until(true)
-    end
-
-    return true
-end
-
-function M.check_sub(tbl, info)
-    local count = 0
-    for _,v in ipairs(tbl) do
-        count = count + v
-    end
-    local yu = (count % 3)
-
-    if yu == 1 then
-        return false
-    elseif yu == 2 then
-        if info.eye then
-            return false
-        end
-
-        return M.check_wave_and_eye(tbl)
-    end
-
-    return M.check_wave(tbl)
-end
-
-function M.check_wave(tbl)
-    local num = 0
-    for _,c in ipairs(tbl) do
-        num = num * 10 + c
-    end
-
-    if wave_table[num] then
-        return true
-    end
-
-    -- wave_table[num] = true
-    return false
-end
-
--- 检查是否匹配3*n + 2
-function M.check_wave_and_eye(tbl)
-    if #tbl == 1 then
-        return true
-    end
-
-    local num = 0
-    for _,c in ipairs(tbl) do
-        num = num * 10 + c
-    end
-
-    if wave_table_eye[num] then
-        return true
-    end
-
-    local len = #tbl
-    -- 拆出可能的眼位，再判断
-    for i,v in ipairs(tbl) do
-        repeat
-            if v < 2 then
+            if info.eye and v.eye then
                 break
             end
 
-            local tmp_tbl_1 = {}
-            local tmp_tbl_2 = {}
-            for ii,vv in ipairs(tbl) do
-                table.insert(tmp_tbl_1, vv)
-            end
-
-            if v > 2 then
-                tmp_tbl_1[i] = v - 2
-            else
-                if i == 1 then
-                    table.remove(tmp_tbl_1, 1)
-                elseif i == len then
-                    table.remove(tmp_tbl_1)
-                else
-                    for ii = i + 1, len do
-                        table.insert(tmp_tbl_2, tbl[ii])
-                    end
-                    tmp_tbl_1[i] = nil
-                end
-            end
-
-            if not M.check_wave(tmp_tbl_1) then
+            if info.gui_num < v.gui_num then
                 break
             end
 
-            if next(tmp_tbl_2) then
-                if not M.check_wave(tmp_tbl_2) then
-                    break
+            if level < info.c then
+                info.gui_num = info.gui_num - v.gui_num
+                local old_eye = info.eye
+                info.eye = old_eye or v.eye
+                if M.check_probability_sub(splited_table, info, level + 1) then
+                    return true
                 end
+                info.eye = old_eye
+                info.gui_num = info.gui_num - v.gui_num
+                break
+            end
+
+            if not info.eye and not v.eye and info.gui_num < 2 + v.gui_num then
+                break
             end
 
             return true
-        until(true)
+       until(true)
+    end
+
+    return false
+end
+
+function M.check_probability(splited_table, gui_num)
+    local c = #splited_table
+    -- 全是鬼牌
+    if c == 0 then
+        return true
+    end
+
+    -- 只有一种花色的牌和鬼牌
+    if c == 1 then
+        return true
+    end
+
+    -- 组合花色间的组合，如果能满足组合条件，则胡
+    for i,v in ipairs(splited_table[1]) do
+        local info = {
+            eye = v.eye,
+            gui_num = gui_num - v.gui_num,
+            c = c
+        }
+
+        local ret = M.check_probability_sub(splited_table, info, 2)
+        if ret then
+            return true
+        end
     end
 
     return false
