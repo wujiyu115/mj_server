@@ -1,9 +1,11 @@
 local login = require "status.login"
+local hall = require "status.hall"
 local room = require "status.room"
 
 local status_tbl = {
     ["login"] = login,
-    ["room"] = room
+    ["room"] = room,
+    ["hall"] = hall
 }
 
 local M = {
@@ -19,7 +21,3 @@ function M:enter(name)
 end
 
 return M
-
-
-
-

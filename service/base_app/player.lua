@@ -20,6 +20,20 @@ end
 
 function M:load_from_db()
     local obj = db:load_player(self.account)
+    if obj then
+        self._db = obj
+    else
+        M:_create_db()
+    end
+end
+
+function M:_create_db()
+    local obj = {
+        account = self.account,
+        nick_name = "haha"..os.time(),
+        score = 0,
+    }
+    db:save_player(obj)
     self._db = obj
 end
 

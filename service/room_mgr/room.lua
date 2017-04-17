@@ -14,14 +14,4 @@ function M.create(info)
     return o
 end
 
--- 玩家进入房间
-function M:add_player(player)
-    local info = {id = player.id}
-    skynet.call(self.addr, "lua", "enter", info)
-end
-
-function M:remove_player(player)
-    skynet.call(self.addr, "lua", "leave", player.id)
-end
-
 return M

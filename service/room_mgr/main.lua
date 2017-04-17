@@ -9,11 +9,6 @@ local CMD = {}
 function CMD.start()
     room_mgr:init()
 
-    for _,v in ipairs(room_list) do
-        --skynet.error("创建房间 "..v.name)
-        local room_obj = room.create(v)
-        room_mgr:add_room(room_obj)
-    end
 end
 
 function CMD.create_table()
