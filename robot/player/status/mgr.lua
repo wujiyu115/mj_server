@@ -10,12 +10,12 @@ local M = {
     cur = nil
 }
 
-function M.enter(name)
+function M:enter(name)
     if self.cur then
-        self.cur.leave()
+        self.cur:leave()
     end
     self.cur = status_tbl[name]
-    self.cur.enter()
+    self.cur:enter()
 end
 
 return M
