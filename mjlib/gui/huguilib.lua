@@ -176,7 +176,7 @@ function M.check_probability_sub(splited_table, info, level)
                     return true
                 end
                 info.eye = old_eye
-                info.gui_num = info.gui_num - v.gui_num
+                info.gui_num = info.gui_num + v.gui_num
                 break
             end
 

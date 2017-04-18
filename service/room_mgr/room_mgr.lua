@@ -1,23 +1,21 @@
-local room_list = require "room_list"
+local id_mgr = require "id_mgr"
 
 local M = {}
 
 function M:init()
-    self.room_tbl = {}
+    id_mgr:init()
 end
 
-function M:create_room_by_list()
-    for _,v in ipairs(room_list) do
-        --skynet.error("创建房间 "..v.name)
-        local addr = skynet.newservice(v.service, v.id)
-        self.room_tbl[room.id] = {addr = addr}
-    end
+function M:create(game_id)
+
 end
 
-function M:get_room(id)
+function M:close(room_id)
+
 end
 
-function M:remove_room(id)
+function M:get_room_by_player()
+
 end
 
 return M
