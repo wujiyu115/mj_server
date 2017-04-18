@@ -100,18 +100,23 @@ function M.get_hu_info(hand_cards, waves, gui_index)
 end
 
 function M.check_table(key, gui_num, eye, chi)
+    local tbl
     if not chi then
         if eye then
-            return check_eye_table[gui_num]
+            tbl = check_eye_table[gui_num]
         else
-            return check_table[gui_num]
+            tbl = check_table[gui_num]
         end
     end
 
     if eye then
-        return check_feng_eye_table[gui_num]
+        tbl = check_feng_eye_table[gui_num]
     else
-        return check_feng_table[gui_num]
+        tbl = check_feng_table[gui_num]
+    end
+
+    if tbl then
+        return tbl[key]
     end
 end
 
@@ -145,6 +150,7 @@ function M.split_info(t, gui_num)
         end
 
         if num > 0 then
+            print(key, num)
             local t = M.list_probability(gui_num, num, key, v.chi)
             if #t == 0 then
                 print(v.min, v.max, key, num, gui_num)
