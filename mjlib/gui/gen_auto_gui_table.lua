@@ -117,15 +117,15 @@ end
 local function test_hu_sub(t, num)
     -- 9 + 7 + 9 + 7
     for j=1,32 do
+        local index
         if j<= 18 then
             t[j] = t[j] + 3
         elseif j <= 25 then
-            local index = j - 18
-            t[index] = t[index] + 1
-            t[index + 1] = t[index + 1] + 1
-            t[index + 2] = t[index + 2] + 1
+            index = j - 18
         else
-            local index = j - 25
+            index = j - 16
+        end
+        if index then
             t[index] = t[index] + 1
             t[index + 1] = t[index + 1] + 1
             t[index + 2] = t[index + 2] + 1
@@ -133,19 +133,13 @@ local function test_hu_sub(t, num)
 
         if num == 4 then
             check_hu(t)
-       else
+        else
             test_hu_sub(t, num + 1)
         end
 
         if j<= 18 then
             t[j] = t[j] - 3
-        elseif j <= 25 then
-            local index = j - 18
-            t[index] = t[index] - 1
-            t[index + 1] = t[index + 1] - 1
-            t[index + 2] = t[index + 2] - 1
         else
-            local index = j - 25
             t[index] = t[index] - 1
             t[index + 1] = t[index + 1] - 1
             t[index + 2] = t[index + 2] - 1

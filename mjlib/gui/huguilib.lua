@@ -77,18 +77,18 @@ end
 
 function M.check_table(key, gui_num, eye, chi)
     local tbl
-    if not chi then
+    if chi then
         if eye then
             tbl = check_eye_table[gui_num]
         else
             tbl = check_table[gui_num]
         end
-    end
-
-    if eye then
-        tbl = check_feng_eye_table[gui_num]
     else
-        tbl = check_feng_table[gui_num]
+        if eye then
+            tbl = check_feng_eye_table[gui_num]
+        else
+            tbl = check_feng_table[gui_num]
+        end
     end
 
     if tbl then
@@ -97,20 +97,22 @@ function M.check_table(key, gui_num, eye, chi)
 end
 
 function M.list_probability(gui_num, num, key, chi)
+    --nprint("gui_num", gui_num, "num",num, "key", key)
     local t = {}
     for i=0, gui_num do
         local yu = (num + i)%3
         if yu == 0 then
-            if M.check_table(num, i, false, chi) then
+            if M.check_table(key, i, false, chi) then
                 table.insert(t, {eye = false, gui_num = i})
             end
         elseif yu == 2 then
-            if M.check_table(num, i, true, chi) then
+            if M.check_table(key, i, true, chi) then
                 table.insert(t, {eye = true, gui_num = i})
             end
         end
     end
 
+    --utils.print_array(t)
     return t
 end
 
@@ -133,7 +135,7 @@ function M.split_info(t, gui_num)
             table.insert(ret, t)
         end
     end
-
+    --utils.print_array(ret)
     return ret
 end
 
