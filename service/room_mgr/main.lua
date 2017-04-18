@@ -8,6 +8,14 @@ function CMD.start()
     room_mgr:init()
 end
 
+function CMD.create_room()
+    return room_mgr:create(1, 2)
+end
+
+function CMD.join_room()
+
+end
+
 local function dispatch(_, session, cmd, ...)
     local f = CMD[cmd]
     assert(f, "room_mgr接收到非法lua消息: "..cmd)

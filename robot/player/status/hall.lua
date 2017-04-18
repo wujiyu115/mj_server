@@ -4,7 +4,7 @@ local player = require "player"
 local M = {}
 
 function M:enter()
-    player:send_request("room.create_table", {})
+    player:send_request("room.create_room", {})
 end
 
 function M:tick()

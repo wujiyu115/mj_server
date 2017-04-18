@@ -1,6 +1,6 @@
 local sock_mgr = require "sock_mgr"
 
-local handler_tbl = {"room", "table"}
+local handler_tbl = {"room", "game"}
 
 local M = {}
 

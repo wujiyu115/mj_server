@@ -15,6 +15,10 @@ local function main()
     skynet.uniqueservice("base_app_mgr")
     skynet.call("base_app_mgr", "lua", "start")
 
+    -- area_mgr
+    skynet.uniqueservice("area_mgr")
+    skynet.call("area_mgr", "lua", "start")
+
     -- room_mgr
     skynet.uniqueservice("room_mgr")
     skynet.call("room_mgr", "lua", "start")
