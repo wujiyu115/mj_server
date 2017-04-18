@@ -121,7 +121,9 @@ function M.check_wave(tbl)
         return true
     end
 
-    -- wave_table[num] = true
+    if wave_table.collect then
+        wave_table[num] = true
+    end
     return false
 end
 

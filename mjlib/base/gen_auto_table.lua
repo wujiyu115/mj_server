@@ -7,17 +7,6 @@ local hulib = require "hulib"
 
 local tested_tbl = {}
 
-local function add_cache(t)
-    local num = 0
-    for i=1,9 do
-        num = num * 10 + tbl[i]
-    end
-
-    if tested_tbl[num] then
-        return true
-    end
-end
-
 local function check_hu(t)
     for i=1,34 do
         if t[i] > 4 then
@@ -43,11 +32,16 @@ local function check_hu(t)
 end
 
 local function test_hu_sub(t, num)
-    for j=1,16 do
-        if j<= 9 then
+    for j=1,32 do
+        local index
+        if j <= 18 then
             t[j] = t[j] + 3
+        elseif j<= 25 then
+            index = j - 18
         else
-            local index = j - 9
+            index = j - 16
+        end
+        if index then
             t[index] = t[index] + 1
             t[index + 1] = t[index + 1] + 1
             t[index + 2] = t[index + 2] + 1
@@ -55,14 +49,13 @@ local function test_hu_sub(t, num)
 
         if num == 4 then
             check_hu(t)
-       else
+        else
             test_hu_sub(t, num + 1)
         end
 
-        if j<= 9 then
+        if j<= 18 then
             t[j] = t[j] - 3
         else
-            local index = j - 9
             t[index] = t[index] - 1
             t[index + 1] = t[index + 1] - 1
             t[index + 2] = t[index + 2] - 1
@@ -132,7 +125,9 @@ local function gen_auto_table_with_eye()
 end
 
 local function main()
+    auto_table.collect = true
     gen_auto_table()
+    auto_table.collect = nil
     gen_auto_table_with_eye()
 end
 

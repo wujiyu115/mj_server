@@ -6,8 +6,8 @@ local id_tbl = {
     {name = "login.register"},
     -- baseapp登陆
     {name = "login.login_baseapp"},
-    {name = "room.create_table"},
-    {name = "room.join_table"},
+    {name = "room.create_room"},
+    {name = "room.join_room"},
 }
 
 local name_tbl = {}

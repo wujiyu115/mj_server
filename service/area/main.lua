@@ -1,7 +1,6 @@
 local skynet = require "skynet"
 local player_mgr = require "player_mgr"
 local table_mgr = require "table_mgr"
-local mjlib = require "mjlib"
 
 local room_id = ...
 room_id = tonumber(room_id)
@@ -19,9 +18,6 @@ function CMD.leave()
 end
 
 function CMD.test()
-    if room_id == 1 then
-        mjlib.test()
-    end
 end
 
 skynet.start(function ()

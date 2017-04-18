@@ -1,27 +1,5 @@
 package.path = "../../lualib/?.lua;"..package.path
 local utils = require "utils"
-local no_gui_table = require "no_gui_table"
-local no_gui_eye_table = require "no_gui_eye_table"
-local one_gui_table = require "one_gui_table"
-local one_gui_eye_table = require "one_gui_eye_table"
-local two_gui_table = require "two_gui_table"
-local two_gui_eye_table = require "two_gui_eye_table"
-local three_gui_table = require "three_gui_table"
-local three_gui_eye_table = require "three_gui_eye_table"
-local four_gui_table = require "four_gui_table"
-local four_gui_eye_table = require "four_gui_eye_table"
-
-local no_gui_feng_table = require "no_gui_feng_table"
-local no_gui_feng_eye_table = require "no_gui_feng_eye_table"
-local one_gui_feng_table = require "one_gui_feng_table"
-local one_gui_feng_eye_table = require "one_gui_feng_eye_table"
-local two_gui_feng_table = require "two_gui_feng_table"
-local two_gui_feng_eye_table = require "two_gui_feng_eye_table"
-local three_gui_feng_table = require "three_gui_feng_table"
-local three_gui_feng_eye_table = require "three_gui_feng_eye_table"
-local four_gui_feng_table = require "four_gui_feng_table"
-local four_gui_feng_eye_table = require "four_gui_feng_eye_table"
-
 local mjlib = require "mjlib"
 
 local split_table = {
@@ -32,35 +10,35 @@ local split_table = {
 }
 
 local check_table = {
-    [0] = no_gui_table,
-    [1] = one_gui_table,
-    [2] = two_gui_table,
-    [3] = three_gui_table,
-    [4] = four_gui_table
+    [0] = require "no_gui_table",
+    [1] = require "one_gui_table",
+    [2] = require "two_gui_table",
+    [3] = require "three_gui_table",
+    [4] = require "four_gui_table"
 }
 
 local check_eye_table = {
-    [0] = no_gui_eye_table,
-    [1] = one_gui_eye_table,
-    [2] = two_gui_eye_table,
-    [3] = three_gui_eye_table,
-    [4] = four_gui_eye_table
+    [0] = require "no_gui_eye_table",
+    [1] = require "one_gui_eye_table",
+    [2] = require "two_gui_eye_table",
+    [3] = require "three_gui_eye_table",
+    [4] = require "four_gui_eye_table"
 }
 
 local check_feng_table = {
-    [0] = no_gui_feng_table,
-    [1] = one_gui_feng_table,
-    [2] = two_gui_feng_table,
-    [3] = three_gui_feng_table,
-    [4] = four_gui_feng_table
+    [0] = require "no_gui_feng_table",
+    [1] = require "one_gui_feng_table",
+    [2] = require "two_gui_feng_table",
+    [3] = require "three_gui_feng_table",
+    [4] = require "four_gui_feng_table"
 }
 
 local check_feng_eye_table = {
-    [0] = no_gui_feng_eye_table,
-    [1] = one_gui_feng_eye_table,
-    [2] = two_gui_feng_eye_table,
-    [3] = three_gui_feng_eye_table,
-    [4] = three_gui_feng_eye_table,
+    [0] = require "no_gui_feng_eye_table",
+    [1] = require "one_gui_feng_eye_table",
+    [2] = require "two_gui_feng_eye_table",
+    [3] = require "three_gui_feng_eye_table",
+    [4] = require "three_gui_feng_eye_table",
 }
 
 local M = {}
@@ -91,45 +69,50 @@ function M.get_hu_info(hand_cards, waves, gui_index)
 
     local splited_tbl = M.split_info(hand_cards_tmp, gui_num)
     if not splited_tbl then
-        print("切分失败")
         return false
     end
 
-    utils.print_array(splited_tbl)
     return M.check_probability(splited_tbl, gui_num)
 end
 
 function M.check_table(key, gui_num, eye, chi)
-    if not chi then
+    local tbl
+    if chi then
         if eye then
-            return check_eye_table[gui_num]
+            tbl = check_eye_table[gui_num]
         else
-            return check_table[gui_num]
+            tbl = check_table[gui_num]
+        end
+    else
+        if eye then
+            tbl = check_feng_eye_table[gui_num]
+        else
+            tbl = check_feng_table[gui_num]
         end
     end
 
-    if eye then
-        return check_feng_eye_table[gui_num]
-    else
-        return check_feng_table[gui_num]
+    if tbl then
+        return tbl[key]
     end
 end
 
 function M.list_probability(gui_num, num, key, chi)
+    --nprint("gui_num", gui_num, "num",num, "key", key)
     local t = {}
     for i=0, gui_num do
         local yu = (num + i)%3
         if yu == 0 then
-            if M.check_table(num, i, false, chi) then
+            if M.check_table(key, i, false, chi) then
                 table.insert(t, {eye = false, gui_num = i})
             end
         elseif yu == 2 then
-            if M.check_table(num, i, true, chi) then
+            if M.check_table(key, i, true, chi) then
                 table.insert(t, {eye = true, gui_num = i})
             end
         end
     end
 
+    --utils.print_array(t)
     return t
 end
 
@@ -147,13 +130,12 @@ function M.split_info(t, gui_num)
         if num > 0 then
             local t = M.list_probability(gui_num, num, key, v.chi)
             if #t == 0 then
-                print(v.min, v.max, key, num, gui_num)
                 return false
             end
             table.insert(ret, t)
         end
     end
-
+    --utils.print_array(ret)
     return ret
 end
 
@@ -176,7 +158,7 @@ function M.check_probability_sub(splited_table, info, level)
                     return true
                 end
                 info.eye = old_eye
-                info.gui_num = info.gui_num - v.gui_num
+                info.gui_num = info.gui_num + v.gui_num
                 break
             end
 

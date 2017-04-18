@@ -16,12 +16,13 @@ function M:connect(ip, port)
     end
 
     self.fds[fd] = {
-        lase = "",
+        last = "",
         packs = {}
     }
 
     skynet.fork(function() self:recv_loop(fd) end)
 
+    skynet.error("连接"..ip..":"..port.."成功")
     return fd
 end
 
@@ -42,6 +43,7 @@ function M:recv_loop(fd)
 end
 
 function M:data(fd, str)
+    skynet.error("收到数据"..#str)
     local info = self.fds[fd]
     if not info then
         return
@@ -70,14 +72,15 @@ function M:data(fd, str)
     end
 end
 
-function M:deal_package(data)
+function M:deal_package(fd, data)
+    skynet.error("deal package len = "..#data)
     local id, param_str = string.unpack(">Hs2", data)
     print("recv package:", id, param_str)
 
     local name = msg_define.id_2_name(id)
     local param = utils.str_2_table(param_str)
 
-    self:dispatch_msg(name, param)
+    self:dispatch_msg(fd, name, param)
 end
 
 function M:close(fd)
@@ -90,24 +93,21 @@ function M:send_request(fd, name, msg)
     local msg_str = utils.table_2_str(msg)
     local len = 2 + 2 + #msg_str
     local data = string.pack(">HHs2", len, id, msg_str)
-    socket.send(fd, data)
+    socket.write(fd, data)
 
-    print("send msg", name)
-    for k,v in pairs(msg) do
-        print(k,v)
-    end
+    skynet.error("send msg "..name)
 end
 
-function M:dispatch_msg(name, param)
+function M:dispatch_msg(fd, name, param)
     local info = self.handler_tbl[name]
     if not info then
         skynet.error("can't find msg handler msg = "..name)
         return
     end
     if info.obj then
-        info.handler(info.obj, param)
+        info.handler(info.obj, fd, param)
     else
-        info.handler(param)
+        info.handler(fd, param)
     end
 end
 

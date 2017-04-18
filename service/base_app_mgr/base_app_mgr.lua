@@ -8,7 +8,7 @@ end
 
 -- 创建baseapp
 function M:create_base_apps()
-    for i=1,20 do
+    for i=1,2 do
         local addr = skynet.newservice("base_app", i)
         local info = {
             addr = addr,
